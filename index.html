@@ -39,20 +39,23 @@
 <body>
   <h1>Story Generator for Kids</h1>
   <textarea id="prompt" placeholder="Enter a story idea..."></textarea>
-  <button onclick="generateStory()">Generate Story</button>
+  <button id="generateBtn">Generate Story</button>
   <div class="output" id="result"></div>
 
   <script type="module">
     // Import WasmLlama from CDN
     import WasmLlama from 'https://cdn.jsdelivr.net/npm/@wllama/wllama@2.3.1/+esm';
 
-    const modelPath = './models/TinyStories-LLaMA2-25M-256h-4l-GQA-Q5_K_M.gguf'; // Path to your GGUF model
+    const modelPath = './models/TinyStories-LLaMA2-25M-256h-4l-GQA-Q5_K_M.gguf'; // Your model path
+
     let llama;
 
     async function initModel() {
       if (!llama) {
+        console.log('Loading model...');
         llama = new WasmLlama();
         await llama.load(modelPath);
+        console.log('Model loaded successfully.');
       }
       return llama;
     }
@@ -71,7 +74,7 @@
       document.getElementById('result').innerText = '';
     });
 
-    document.querySelector('button').addEventListener('click', async () => {
+    document.getElementById('generateBtn').addEventListener('click', async () => {
       const prompt = document.getElementById('prompt').value.trim();
       if (!prompt) return alert("Please enter a prompt.");
 
