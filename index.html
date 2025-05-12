@@ -43,8 +43,8 @@
   <div class="output" id="result"></div>
 
   <script type="module">
-    // Import WasmLlama from CDN
-    import WasmLlama from 'https://cdn.jsdelivr.net/npm/@wllama/wllama@2.3.1/esm';
+    // Correct import URL for single-threaded WasmLlama
+    import WasmLlama from 'https://cdn.jsdelivr.net/npm/@wllama/wllama@2.3.1/src/single-thread/wllama.min.js';
 
     const modelPath = './models/TinyStories-LLaMA2-25M-256h-4l-GQA-Q5_K_M.gguf'; // Your model path
 
