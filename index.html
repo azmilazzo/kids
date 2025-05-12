@@ -46,49 +46,53 @@
   <script src="https://cdn.jsdelivr.net/npm/@wllama/wllama@2.3.1/src/single-thread/wllama.min.js"></script>
 
   <script>
-    const modelPath = './models/TinyStories-LLaMA2-25M-256h-4l-GQA-Q5_K_M.gguf'; // Your model path
+    window.onload = async () => {
+      console.log('WasmLlama:', WasmLlama); // Debug: Check if WasmLlama is defined
 
-    let llama;
+      const modelPath = './models/TinyStories-LLaMA2-25M-256h-4l-GQA-Q5_K_M.gguf'; // Your model path
 
-    async function initModel() {
-      if (!llama) {
-        console.log('Loading model...');
-        llama = new WasmLlama();
-        await llama.load(modelPath);
-        console.log('Model loaded successfully.');
+      let llama;
+
+      async function initModel() {
+        if (!llama) {
+          console.log('Loading model...');
+          llama = new WasmLlama();
+          await llama.load(modelPath);
+          console.log('Model loaded successfully.');
+        }
+        return llama;
       }
-      return llama;
-    }
 
-    async function generateStory(prompt) {
-      const model = await initModel();
-      const response = await model.generate(prompt, {
-        max_tokens: 150,
-        temperature: 0.7,
-        top_p: 0.9,
+      async function generateStory(prompt) {
+        const model = await initModel();
+        const response = await model.generate(prompt, {
+          max_tokens: 150,
+          temperature: 0.7,
+          top_p: 0.9,
+        });
+        return response.text;
+      }
+
+      document.getElementById('prompt').addEventListener('input', () => {
+        document.getElementById('result').innerText = '';
       });
-      return response.text;
-    }
 
-    document.getElementById('prompt').addEventListener('input', () => {
-      document.getElementById('result').innerText = '';
-    });
+      document.getElementById('generateBtn').addEventListener('click', async () => {
+        const prompt = document.getElementById('prompt').value.trim();
+        if (!prompt) return alert("Please enter a prompt.");
 
-    document.getElementById('generateBtn').addEventListener('click', async () => {
-      const prompt = document.getElementById('prompt').value.trim();
-      if (!prompt) return alert("Please enter a prompt.");
+        const outputBox = document.getElementById('result');
+        outputBox.innerHTML = '<div class="loading">Generating your story...</div>';
 
-      const outputBox = document.getElementById('result');
-      outputBox.innerHTML = '<div class="loading">Generating your story...</div>';
-
-      try {
-        const story = await generateStory(prompt);
-        outputBox.innerText = story;
-      } catch (error) {
-        console.error(error);
-        outputBox.innerText = "Something went wrong. Try again.";
-      }
-    });
+        try {
+          const story = await generateStory(prompt);
+          outputBox.innerText = story;
+        } catch (error) {
+          console.error(error);
+          outputBox.innerText = "Something went wrong. Try again.";
+        }
+      });
+    };
   </script>
 </body>
 </html>
