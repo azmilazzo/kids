@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RoboEyes Expressions</title>
+  <title>RoboEyes Animation</title>
   <style>
     body {
       margin: 0;
@@ -25,15 +25,6 @@
       margin-top: 10px;
       display: flex;
       gap: 10px;
-      align-items: center;
-    }
-    select {
-      padding: 8px;
-      font-size: 14px;
-      border-radius: 5px;
-      border: none;
-      background-color: #333;
-      color: white;
     }
     button {
       padding: 8px 16px;
@@ -47,20 +38,30 @@
     button:hover {
       background-color: #555;
     }
+    select {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #444;
+      border-radius: 5px;
+      background-color: #222;
+      color: white;
+      margin-right: 10px;
+    }
   </style>
 </head>
 <body>
   <canvas id="roboEyes" width="128" height="64"></canvas>
   <div class="controls">
-    <label for="expressionSelector">Expression:</label>
-    <select id="expressionSelector">
+    <select id="expressionSelect">
       <option value="happy">Happy</option>
-      <option value="surprised">Surprised</option>
+      <option value="neutral">Neutral</option>
       <option value="angry">Angry</option>
       <option value="sad">Sad</option>
-      <option value="neutral">Neutral</option>
-      <option value="confused">Confused</option>
+      <option value="heart_eyes">Heart Eyes</option>
       <option value="sleepy">Sleepy</option>
+      <option value="dizzy">Dizzy</option>
+      <option value="love">Love</option>
+      <option value="shocked">Shocked</option>
     </select>
     <button id="toggleCuriosity">Toggle Curiosity</button>
     <button id="toggleFullscreen">Toggle Fullscreen</button>
@@ -70,74 +71,143 @@
     const canvas = document.getElementById("roboEyes");
     const ctx = canvas.getContext("2d");
 
-    // Expression definitions
-    const expressions = {
-      happy: { color: "#00ff00", width: 30, height: 20, spacing: 40 },
-      surprised: { color: "#ffff00", width: 40, height: 30, spacing: 30 },
-      angry: { color: "#ff0000", width: 20, height: 10, spacing: 50 },
-      sad: { color: "#00ffff", width: 25, height: 20, spacing: 45 },
-      neutral: { color: "#ffffff", width: 30, height: 20, spacing: 40 },
-      confused: { color: "#ff00ff", width: 30, height: 20, spacing: 40, rotation: 0.1 },
-      sleepy: { color: "#8888ff", width: 30, height: 10, spacing: 40 }
-    };
-
-    let currentExpression = "happy";
+    // Eye properties
+    let eyeWidth = 30;
+    let eyeHeight = 20;
+    let spacing = 40;
     let isBlinking = false;
-    let isCurious = false;
-    let eyeOffset = 0;
+    let blinkTimer = null;
+    let currentExpression = "happy";
+    let eyeOffset = 0; // For curiosity movement
+
+    // Define all expressions
+    const expressions = {
+      happy: () => {
+        ctx.fillStyle = "#00ff00";
+        ctx.roundRect(leftX, 24, eyeWidth, eyeHeight, 5);
+        ctx.roundRect(rightX, 24, eyeWidth, eyeHeight, 5);
+      },
+      neutral: () => {
+        ctx.fillStyle = "#ffff00";
+        ctx.roundRect(leftX, 24, eyeWidth, eyeHeight, 5);
+        ctx.roundRect(rightX, 24, eyeWidth, eyeHeight, 5);
+      },
+      angry: () => {
+        ctx.fillStyle = "#ff0000";
+        ctx.beginPath();
+        ctx.moveTo(leftX + 5, 24);
+        ctx.lineTo(leftX + 25, 18);
+        ctx.lineTo(leftX + 25, 24);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(rightX + 5, 24);
+        ctx.lineTo(rightX + 25, 18);
+        ctx.lineTo(rightX + 25, 24);
+        ctx.fill();
+      },
+      sad: () => {
+        ctx.fillStyle = "#0000ff";
+        ctx.beginPath();
+        ctx.arc(leftX + 17.5, 34, 10, Math.PI, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(rightX + 17.5, 34, 10, Math.PI, 0);
+        ctx.closePath();
+        ctx.fill();
+      },
+      heart_eyes: () => {
+        ctx.fillStyle = "#ff00ff";
+        ctx.beginPath();
+        ctx.arc(leftX + 17.5, 29, 5, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(rightX + 17.5, 29, 5, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+      },
+      sleepy: () => {
+        ctx.fillStyle = "#aaaaaa";
+        ctx.fillRect(leftX, 24, eyeWidth, 5);
+        ctx.fillRect(rightX, 24, eyeWidth, 5);
+      },
+      dizzy: () => {
+        ctx.fillStyle = "#ffff00";
+        ctx.beginPath();
+        ctx.arc(leftX + 17.5, 29, 5, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(rightX + 17.5, 29, 5, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(leftX + 17.5, 29, 8, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(rightX + 17.5, 29, 8, 0, Math.PI * 2);
+        ctx.stroke();
+      },
+      love: () => {
+        ctx.fillStyle = "#ff00ff";
+        ctx.beginPath();
+        ctx.arc(leftX + 17.5, 29, 5, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(rightX + 17.5, 29, 5, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#ff00ff";
+        ctx.font = "10px Arial";
+        ctx.fillText("❤️", leftX + 12, 35);
+        ctx.fillText("❤️", rightX + 12, 35);
+      },
+      shocked: () => {
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(leftX + 17.5, 29, 5, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(rightX + 17.5, 29, 5, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+      }
+    };
 
     // Draw eyes
     function drawEyes() {
-      const expr = expressions[currentExpression];
-      const { color, width, height, spacing, rotation } = expr;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Background
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Eyes
-      ctx.fillStyle = color;
+      // Calculate eye positions with offset for curiosity
+      const leftX = 32 + eyeOffset;
+      const rightX = 32 + spacing + eyeOffset;
+
+      // Draw selected expression
+      expressions[currentExpression]();
+
+      // Add outlines
       ctx.strokeStyle = "#000";
       ctx.lineWidth = 2;
-
-      // Left eye
-      ctx.beginPath();
-      ctx.roundRect(32 + eyeOffset, 24, width, height, 5);
-      ctx.fill();
-      ctx.stroke();
-
-      // Right eye (mirror left)
-      ctx.beginPath();
-      ctx.roundRect(32 + spacing + eyeOffset, 24, width, height, 5);
-      ctx.fill();
-      ctx.stroke();
-
-      // Sad teardrop (optional)
-      if (currentExpression === "sad") {
-        ctx.beginPath();
-        ctx.moveTo(32 + eyeOffset + width, 24 + height);
-        ctx.lineTo(32 + eyeOffset + width + 10, 24 + height + 20);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(32 + spacing + eyeOffset + width, 24 + height);
-        ctx.lineTo(32 + spacing + eyeOffset + width + 10, 24 + height + 20);
-        ctx.stroke();
-      }
-
-      // Confused wobble
-      if (rotation) {
-        ctx.save();
-        ctx.translate(32 + eyeOffset + width / 2, 24 + height / 2);
-        ctx.rotate(rotation * Math.sin(performance.now() * 0.005));
-        ctx.translate(-32 - eyeOffset - width / 2, -24 - height / 2);
-        // Re-draw left eye
-        ctx.beginPath();
-        ctx.roundRect(32 + eyeOffset, 24, width, height, 5);
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-      }
+      ctx.strokeRect(leftX, 24, eyeWidth, eyeHeight);
+      ctx.strokeRect(rightX, 24, eyeWidth, eyeHeight);
     }
 
     // Blink animation
@@ -146,14 +216,15 @@
       isBlinking = true;
 
       let targetHeight = 0;
-      let currentHeight = expressions[currentExpression].height;
+      let currentHeight = eyeHeight;
       const duration = 200; // ms
       const startTime = performance.now();
 
       function animateBlink(time) {
         const elapsed = time - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        currentHeight = expressions[currentExpression].height * (1 - progress);
+        currentHeight = eyeHeight * (1 - progress);
+        eyeHeight = currentHeight;
         drawEyes();
 
         if (progress < 1) {
@@ -161,7 +232,8 @@
         } else {
           isBlinking = false;
           setTimeout(() => {
-            drawEyes(); // Reset height
+            eyeHeight = 20; // Reset after blink
+            drawEyes();
           }, 200); // Small pause before eyes open
         }
       }
@@ -178,10 +250,10 @@
       }, delay);
     }
 
-    // Curiosity animation
+    // Curiosity animation (eyes move left-right)
     function updateCuriosity() {
       if (!isCurious) return;
-      eyeOffset = Math.sin(performance.now() * 0.002) * 10;
+      eyeOffset = Math.sin(performance.now() * 0.002) * 10; // Oscillate between -10 and +10
       drawEyes();
     }
 
@@ -196,8 +268,17 @@
       }
     }
 
+    // Adjust canvas size for fullscreen
+    function resizeCanvas() {
+      const scale = 1; // Pixel-perfect scaling
+      canvas.width = 128;
+      canvas.height = 64;
+      canvas.style.width = "128px";
+      canvas.style.height = "64px";
+    }
+
     // Event listeners
-    document.getElementById("expressionSelector").addEventListener("change", (e) => {
+    document.getElementById("expressionSelect").addEventListener("change", (e) => {
       currentExpression = e.target.value;
       drawEyes();
     });
@@ -221,14 +302,6 @@
         resizeCanvas();
       }
     });
-
-    // Optional: Resize canvas for responsiveness
-    function resizeCanvas() {
-      canvas.width = 128;
-      canvas.height = 64;
-      canvas.style.width = "128px";
-      canvas.style.height = "64px";
-    }
   </script>
 </body>
 </html>
