@@ -3,537 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Face Tracking Bot</title>
+    <title>Face-Controlled Robot</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
             margin: 0;
-            padding: 0;
             overflow: hidden;
-            background-color: #121212;
-            color: white;
+            background-color: #1a1a1a;
         }
-        
-        .container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-        }
-        
-        #video {
+        #robot {
             position: absolute;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1); /* Mirror the video */
+            width: 150px;
+            transition: all 0.3s ease;
+            transform-origin: center bottom;
         }
-        
-        #output-canvas {
+        #overlay {
             position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            transform: scaleX(-1); /* Mirror the canvas to match video */
-        }
-        
-        .bot-container {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            z-index: 10;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .bot {
-            width: 200px;
-            height: 200px;
-            background-color: #333;
-            border-radius: 50%;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 30px rgba(0, 255, 200, 0.3);
-        }
-        
-        .bot-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .bot-eyes {
-            display: flex;
-            justify-content: space-around;
-            width: 70%;
-        }
-        
-        .bot-eye {
-            width: 30px;
-            height: 30px;
-            background-color: #00ffcc;
-            border-radius: 50%;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .bot-pupil {
-            position: absolute;
-            width: 15px;
-            height: 15px;
-            background-color: #000;
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        
-        .bot-mouth {
-            width: 80px;
-            height: 20px;
-            margin-top: 30px;
-            border-radius: 0 0 40px 40px;
-            border-bottom: 4px solid #00ffcc;
-        }
-        
-        .status-overlay {
-            position: absolute;
-            top: 20px;
-            left: 20px;
+            top: 10px;
+            left: 10px;
             background-color: rgba(0, 0, 0, 0.7);
-            color: #00ffcc;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 16px;
-            z-index: 100;
-        }
-        
-        .loading-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #121212;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            color: #00ff00;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            border-radius: 5px;
             z-index: 1000;
         }
-        
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(0, 255, 200, 0.3);
-            border-radius: 50%;
-            border-top-color: #00ffcc;
-            animation: spin 1s ease-in-out infinite;
-            margin-bottom: 20px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .message-box {
-            position: absolute;
-            max-width: 300px;
-            background-color: rgba(0, 0, 0, 0.7);
-            border-radius: 10px;
-            padding: 15px;
-            color: white;
-            font-size: 16px;
-            z-index: 50;
-            top: 100px;
-            right: 20px;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-        
-        .message-box.visible {
-            opacity: 1;
-        }
-        
-        .toggle-button {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: #00ffcc;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 15px;
-            cursor: pointer;
-            z-index: 100;
+        #video, #canvas {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <video id="video" playsinline autoplay></video>
-        <canvas id="output-canvas"></canvas>
-        
-        <div class="bot-container">
-            <div class="bot">
-                <div class="bot-face">
-                    <div class="bot-eyes">
-                        <div class="bot-eye left-eye">
-                            <div class="bot-pupil" id="left-pupil"></div>
-                        </div>
-                        <div class="bot-eye right-eye">
-                            <div class="bot-pupil" id="right-pupil"></div>
-                        </div>
-                    </div>
-                    <div class="bot-mouth" id="bot-mouth"></div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="status-overlay">
-            <p id="status-text">Status: Initializing...</p>
-            <p id="face-position">Face Position: None detected</p>
-        </div>
-        
-        <div class="message-box" id="message-box">
-            Hello! I can see you now. Move your face around and I'll follow!
-        </div>
-        
-        <button class="toggle-button" id="toggle-mesh">Hide Face Mesh</button>
-        
-        <div class="loading-screen" id="loading-screen">
-            <div class="loading-spinner"></div>
-            <p>Loading AI Face Tracking...</p>
-        </div>
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+    <div id="overlay">
+        <div>STATUS: <span id="status">INITIALIZING...</span></div>
+        <div>HEAD TILT: <span id="tilt">0°</span></div>
+        <div>MOUTH OPEN: <span id="mouth">0%</span></div>
     </div>
+    <img id="robot" src="https://cdn-icons-png.flaticon.com/512/1046/1046784.png" alt="Robot">
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // DOM Elements
-        const videoElement = document.getElementById('video');
-        const canvasElement = document.getElementById('output-canvas');
-        const canvasCtx = canvasElement.getContext('2d');
-        const statusText = document.getElementById('status-text');
-        const facePosition = document.getElementById('face-position');
-        const loadingScreen = document.getElementById('loading-screen');
-        const messageBox = document.getElementById('message-box');
-        const toggleMesh = document.getElementById('toggle-mesh');
-        
-        // Bot elements
-        const leftPupil = document.getElementById('left-pupil');
-        const rightPupil = document.getElementById('right-pupil');
-        const botMouth = document.getElementById('bot-mouth');
-        
-        // State variables
-        let showFaceMesh = true;
-        let faceDetected = false;
-        let eyeMaxMove = 5;
-        
-        // Toggle face mesh visibility
-        toggleMesh.addEventListener('click', function() {
-            showFaceMesh = !showFaceMesh;
-            toggleMesh.textContent = showFaceMesh ? "Hide Face Mesh" : "Show Face Mesh";
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const robot = document.getElementById('robot');
+        const statusEl = document.getElementById('status');
+        const tiltEl = document.getElementById('tilt');
+        const mouthEl = document.getElementById('mouth');
+
+        let isBlinking = false;
+        let currentTilt = 0;
+        let mouthOpenness = 0;
+
+        const faceMesh = new FaceMesh({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
         });
-        
-        // Canvas dimensions
-        function updateCanvasDimensions() {
-            canvasElement.width = window.innerWidth;
-            canvasElement.height = window.innerHeight;
-        }
-        
-        window.addEventListener('resize', updateCanvasDimensions);
-        updateCanvasDimensions();
-        
-        // Access webcam
-        async function setupCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { 
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                        facingMode: "user"
-                    },
-                    audio: false
-                });
-                
-                videoElement.srcObject = stream;
-                
-                return new Promise((resolve) => {
-                    videoElement.onloadedmetadata = () => {
-                        resolve(videoElement);
-                    };
-                });
-            } catch (err) {
-                statusText.textContent = `Camera error: ${err.message}`;
-                console.error("Error accessing webcam:", err);
-                loadingScreen.innerHTML = "<p>Error accessing camera.<br>Please check permissions and refresh.</p>";
-                throw err;
+
+        faceMesh.setOptions({
+            maxNumFaces: 1,
+            refineLandmarks: true,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
+        faceMesh.onResults(processFace);
+
+        new Camera(video, {
+            onFrame: async () => {
+                await faceMesh.send({image: video});
+            },
+            facingMode: 'user',
+            width: 320,
+            height: 240
+        }).start();
+
+        function processFace(results) {
+            if (!results.multiFaceLandmarks) {
+                statusEl.textContent = 'NO FACE DETECTED';
+                return;
             }
+
+            statusEl.textContent = 'TRACKING';
+            const landmarks = results.multiFaceLandmarks[0];
+            
+            // Head tilt detection (using nose and forehead landmarks)
+            const noseTip = landmarks[4];
+            const forehead = landmarks[10];
+            const tiltAngle = calculateTilt(noseTip, forehead);
+            
+            // Blink detection (left eye landmarks)
+            const leftEyeUpper = landmarks[159];
+            const leftEyeLower = landmarks[145];
+            const blinkValue = detectBlink(leftEyeUpper, leftEyeLower);
+            
+            // Mouth openness detection
+            const mouthUpper = landmarks[13];
+            const mouthLower = landmarks[14];
+            mouthOpenness = Math.abs(mouthUpper.y - mouthLower.y);
+
+            updateRobot(tiltAngle, blinkValue, mouthOpenness);
+            updateUI(tiltAngle, mouthOpenness);
         }
-        
-        // Animate bot based on face position
-        function animateBot(x, y) {
-            // Map face position (0-1) to pupil movement
-            const normalizedX = (x - 0.5) * 2; // -1 to 1
-            const normalizedY = (y - 0.5) * 2; // -1 to 1
-            
-            const pupilMoveX = normalizedX * eyeMaxMove;
-            const pupilMoveY = normalizedY * eyeMaxMove;
-            
-            // Move pupils
-            leftPupil.style.transform = `translate(calc(-50% + ${pupilMoveX}px), calc(-50% + ${pupilMoveY}px))`;
-            rightPupil.style.transform = `translate(calc(-50% + ${pupilMoveX}px), calc(-50% + ${pupilMoveY}px))`;
-            
-            // Random blinking and mouth movements
-            if (Math.random() < 0.01) { // 1% chance per frame
-                // Blink animation
-                document.querySelectorAll('.bot-eye').forEach(eye => {
-                    eye.style.height = '2px';
-                    setTimeout(() => { eye.style.height = '30px'; }, 150);
-                });
-            }
-            
-            if (Math.random() < 0.02) { // 2% chance per frame
-                // Mouth animation
-                botMouth.style.height = `${15 + Math.random() * 15}px`;
-                setTimeout(() => { botMouth.style.height = '20px'; }, 300);
-            }
+
+        function calculateTilt(nose, forehead) {
+            const deltaX = forehead.x - nose.x;
+            const deltaY = forehead.y - nose.y;
+            return Math.atan2(deltaY, deltaX) * (180 / Math.PI);
         }
-        
-        // Bot messages
-        const botMessages = [
-            "I see you're moving around! That's fun to track.",
-            "Try moving side to side, I'll follow you.",
-            "Blink if you can read this!",
-            "I'm watching your movements. Fascinating!",
-            "My AI is learning your facial features.",
-            "You look great today!",
-            "Wave if you can see me too!",
-            "Move closer to the camera for better tracking.",
-            "I can track your face in real-time!"
-        ];
-        
-        function showRandomMessage() {
-            if (faceDetected) {
-                const msg = botMessages[Math.floor(Math.random() * botMessages.length)];
-                messageBox.textContent = msg;
-                messageBox.classList.add('visible');
-                
+
+        function detectBlink(upper, lower) {
+            const eyeDistance = Math.abs(upper.y - lower.y);
+            return eyeDistance < 0.015 ? 1 : 0;
+        }
+
+        function updateRobot(tilt, blink, mouth) {
+            // Position robot in center
+            const centerX = window.innerWidth/2 - robot.width/2;
+            const centerY = window.innerHeight/2 - robot.height/2;
+            
+            // Apply transformations
+            robot.style.transform = `
+                translate(${centerX}px, ${centerY}px)
+                rotate(${tilt}deg)
+                scale(${1 + mouth * 2})
+            `;
+
+            // Blink animation
+            if(blink && !isBlinking) {
+                robot.style.filter = 'brightness(1.5)';
+                isBlinking = true;
                 setTimeout(() => {
-                    messageBox.classList.remove('visible');
-                }, 4000);
-            }
-            
-            // Schedule next message
-            setTimeout(showRandomMessage, 15000 + Math.random() * 10000);
-        }
-        
-        // Load external face-api.js library (more reliable than MediaPipe for browser use)
-        function loadScript(src) {
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = src;
-                script.onload = resolve;
-                script.onerror = reject;
-                document.head.appendChild(script);
-            });
-        }
-        
-        // Simple face tracking using Canvas API and requestAnimationFrame
-        function startSimpleTracking() {
-            loadingScreen.style.display = 'none';
-            statusText.textContent = "Status: Simple tracking mode";
-            
-            const faceTracker = {
-                x: 0.5,
-                y: 0.5,
-                lastX: 0.5,
-                lastY: 0.5,
-                frameCount: 0
-            };
-            
-            // Show welcome message
-            setTimeout(() => {
-                messageBox.classList.add('visible');
-                setTimeout(() => {
-                    messageBox.classList.remove('visible');
-                }, 5000);
-            }, 1000);
-            
-            // Start showing random messages
-            setTimeout(showRandomMessage, 8000);
-            
-            // Animation loop
-            function animate() {
-                // Simulate face tracking with mouse movement for testing
-                document.addEventListener('mousemove', (e) => {
-                    faceTracker.x = e.clientX / window.innerWidth;
-                    faceTracker.y = e.clientY / window.innerHeight;
-                    faceDetected = true;
-                });
-                
-                // Smoothly track simulated face position
-                faceTracker.lastX = faceTracker.lastX * 0.9 + faceTracker.x * 0.1;
-                faceTracker.lastY = faceTracker.lastY * 0.9 + faceTracker.y * 0.1;
-                
-                // Draw video frame to canvas
-                canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-                if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
-                    canvasCtx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-                }
-                
-                // Every few frames, update the face position display
-                if (faceTracker.frameCount % 10 === 0) {
-                    if (faceDetected) {
-                        const x = Math.round(faceTracker.lastX * 100);
-                        const y = Math.round(faceTracker.lastY * 100);
-                        facePosition.textContent = `Face Position: X:${x}%, Y:${y}%`;
-                        statusText.textContent = "Status: Face detected (simple tracking)";
-                    }
-                }
-                
-                // Draw a green circle to show the tracked position
-                if (faceDetected) {
-                    canvasCtx.beginPath();
-                    canvasCtx.arc(
-                        faceTracker.lastX * canvasElement.width, 
-                        faceTracker.lastY * canvasElement.height, 
-                        20, 0, Math.PI * 2
-                    );
-                    canvasCtx.strokeStyle = '#00ffcc';
-                    canvasCtx.lineWidth = 2;
-                    canvasCtx.stroke();
-                    
-                    // Animate bot based on face position
-                    animateBot(faceTracker.lastX, faceTracker.lastY);
-                }
-                
-                faceTracker.frameCount++;
-                requestAnimationFrame(animate);
-            }
-            
-            // Start animation
-            animate();
-        }
-        
-        // Main initialization
-        async function init() {
-            try {
-                // Setup camera
-                await setupCamera();
-                statusText.textContent = "Status: Camera ready";
-                
-                // Attempt to load face-api.js library
-                try {
-                    await loadScript('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js');
-                    
-                    // If face-api.js loaded successfully, use it
-                    await faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights');
-                    await faceapi.nets.faceLandmark68Net.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights');
-                    
-                    statusText.textContent = "Status: AI models loaded";
-                    
-                    // Hide loading screen
-                    loadingScreen.style.display = 'none';
-                    
-                    // Show welcome message
-                    setTimeout(() => {
-                        messageBox.classList.add('visible');
-                        setTimeout(() => messageBox.classList.remove('visible'), 5000);
-                    }, 1000);
-                    
-                    // Start detection loop
-                    videoElement.addEventListener('play', async () => {
-                        // Setup display canvas with same dimensions as video
-                        const displaySize = { width: videoElement.width, height: videoElement.height };
-                        faceapi.matchDimensions(canvasElement, displaySize);
-                        
-                        // Start showing random messages
-                        setTimeout(showRandomMessage, 8000);
-                        
-                        // Face detection loop
-                        setInterval(async () => {
-                            // Detect faces
-                            const detections = await faceapi.detectAllFaces(
-                                videoElement, 
-                                new faceapi.TinyFaceDetectorOptions()
-                            ).withFaceLandmarks();
-                            
-                            // Clear previous canvas drawings
-                            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-                            
-                            // Draw video frame
-                            canvasCtx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-                            
-                            // Process detections
-                            if (detections.length > 0) {
-                                // Face found
-                                faceDetected = true;
-                                const detection = detections[0];
-                                const landmarks = detection.landmarks;
-                                
-                                // Get face position (center of face box)
-                                const box = detection.detection.box;
-                                const faceX = (box.x + box.width/2) / canvasElement.width;
-                                const faceY = (box.y + box.height/2) / canvasElement.height;
-                                
-                                // Update position display
-                                facePosition.textContent = `Face Position: X:${Math.round(faceX * 100)}%, Y:${Math.round(faceY * 100)}%`;
-                                statusText.textContent = "Status: Face detected";
-                                
-                                // Draw face mesh if enabled
-                                if (showFaceMesh) {
-                                    // Draw all the face parts
-                                    canvasCtx.strokeStyle = '#00ffcc';
-                                    canvasCtx.lineWidth = 2;
-                                    
-                                    // Draw face box
-                                    canvasCtx.strokeRect(box.x, box.y, box.width, box.height);
-                                    
-                                    // Draw landmarks
-                                    const points = landmarks.positions;
-                                    for (let i = 0; i < points.length; i++) {
-                                        const { x, y } = points[i];
-                                        canvasCtx.beginPath();
-                                        canvasCtx.arc(x, y, 2, 0, Math.PI * 2);
-                                        canvasCtx.fillStyle = '#00ffcc';
-                                        canvasCtx.fill();
-                                    }
-                                }
-                                
-                                // Animate bot based on face position
-                                animateBot(faceX, faceY);
-                            } else {
-                                // No face detected
-                                if (faceDetected) {
-                                    faceDetected = false;
-                                    statusText.textContent = "Status: No face detected";
-                                    facePosition.textContent = "Face Position: None detected";
-                                }
-                            }
-                        }, 100);
-                    });
-                    
-                } catch (error) {
-                    console.warn("Face-API.js loading failed, using simple tracking", error);
-                    startSimpleTracking();
-                }
-                
-            } catch (error) {
-                console.error("Initialization error:", error);
-                startSimpleTracking();
+                    robot.style.filter = 'brightness(1)';
+                    isBlinking = false;
+                }, 200);
             }
         }
-        
-        // Start the application
-        init();
-    });
+
+        function updateUI(tilt, mouth) {
+            tiltEl.textContent = `${Math.round(tilt)}°`;
+            mouthEl.textContent = `${Math.round(mouth * 100)}%`;
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            robot.style.left = `${window.innerWidth/2 - robot.width/2}px`;
+        });
     </script>
 </body>
 </html>
