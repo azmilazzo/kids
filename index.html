@@ -27,6 +27,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transform: scaleX(-1); /* This mirrors the video and canvas */
         }
         #overlay {
             position: absolute;
@@ -110,6 +111,8 @@
             canvasElement.height = videoElement.videoHeight;
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.translate(canvasElement.width, 0); // Flip horizontally
+            canvasCtx.scale(-1, 1); // Mirror the drawing
             canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
             if (results.multiFaceLandmarks) {
