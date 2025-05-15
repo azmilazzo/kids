@@ -104,10 +104,14 @@
         function onResults(results) {
             canvasElement.width = videoElement.videoWidth;
             canvasElement.height = videoElement.videoHeight;
-            canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-            canvasCtx.translate(canvasElement.width, 0); // Flip horizontally
-            canvasCtx.scale(-1, 1); // Mirror the drawing
+
+            // Begin mirroring the whole canvas rendering
+            canvasCtx.save();
+            canvasCtx.translate(canvasElement.width, 0);
+            canvasCtx.scale(-1, 1);
+            
+            // Draw the mirrored video image
             canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
             if (results.multiFaceLandmarks) {
@@ -120,7 +124,7 @@
                 updateOverlay("Status: No face detected", "Expression: --");
             }
 
-            canvasCtx.restore();
+            canvasCtx.restore(); // End mirroring
         }
 
         function updateOverlay(status, expression) {
