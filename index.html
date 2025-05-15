@@ -9,18 +9,44 @@
       margin: 0;
       background-color: #111;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
       height: 100vh;
+      overflow: hidden;
     }
     canvas {
-      image-rendering: pixelated; /* Crisp pixel look */
+      image-rendering: pixelated;
       border: 2px solid #444;
+      max-width: 100%;
+      max-height: 100%;
+    }
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #333;
+      color: white;
+    }
+    button:hover {
+      background-color: #555;
     }
   </style>
 </head>
 <body>
   <canvas id="roboEyes" width="128" height="64"></canvas>
+  <div class="controls">
+    <button id="toggleMood">Toggle Mood</button>
+    <button id="toggleCuriosity">Toggle Curiosity</button>
+    <button id="toggleFullscreen">Toggle Fullscreen</button>
+  </div>
 
   <script>
     const canvas = document.getElementById("roboEyes");
@@ -32,9 +58,9 @@
     let spacing = 40;
     let isBlinking = false;
     let blinkTimer = null;
-
-    // Mood toggle
     let isHappy = true;
+    let isCurious = false;
+    let eyeOffset = 0; // For curiosity movement
 
     // Draw eyes
     function drawEyes() {
@@ -49,15 +75,19 @@
       ctx.strokeStyle = "#000";
       ctx.lineWidth = 2;
 
+      // Calculate eye positions with offset for curiosity
+      const leftX = 32 + eyeOffset;
+      const rightX = 32 + spacing + eyeOffset;
+
       // Left eye
       ctx.beginPath();
-      ctx.roundRect(32, 24, eyeWidth, eyeHeight, 5);
+      ctx.roundRect(leftX, 24, eyeWidth, eyeHeight, 5);
       ctx.fill();
       ctx.stroke();
 
-      // Right eye (mirror left)
+      // Right eye
       ctx.beginPath();
-      ctx.roundRect(32 + spacing, 24, eyeWidth, eyeHeight, 5);
+      ctx.roundRect(rightX, 24, eyeWidth, eyeHeight, 5);
       ctx.fill();
       ctx.stroke();
     }
@@ -93,7 +123,7 @@
       requestAnimationFrame(animateBlink);
     }
 
-    // Random blink every 5-10 seconds
+    // Schedule random blinks
     function scheduleBlink() {
       const delay = Math.random() * 5000 + 5000; // 5-10s
       blinkTimer = setTimeout(() => {
@@ -102,27 +132,58 @@
       }, delay);
     }
 
-    // Toggle mood (happy/neutral)
-    function toggleMood() {
-      isHappy = !isHappy;
+    // Curiosity animation (eyes move left-right)
+    function updateCuriosity() {
+      if (!isCurious) return;
+      eyeOffset = Math.sin(performance.now() * 0.002) * 10; // Oscillate between -10 and +10
       drawEyes();
     }
+
+    // Fullscreen toggle
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        canvas.requestFullscreen().catch(err => {
+          alert("Fullscreen failed: " + err.message);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    // Adjust canvas size for fullscreen
+    function resizeCanvas() {
+      const scale = 1; // Pixel-perfect scaling
+      canvas.width = 128;
+      canvas.height = 64;
+      canvas.style.width = "128px";
+      canvas.style.height = "64px";
+    }
+
+    // Event listeners
+    document.getElementById("toggleMood").addEventListener("click", () => {
+      isHappy = !isHappy;
+      drawEyes();
+    });
+
+    document.getElementById("toggleCuriosity").addEventListener("click", () => {
+      isCurious = !isCurious;
+      eyeOffset = 0;
+      drawEyes();
+    });
+
+    document.getElementById("toggleFullscreen").addEventListener("click", toggleFullscreen);
 
     // Initial setup
     drawEyes();
     scheduleBlink();
+    setInterval(updateCuriosity, 16); // ~60fps
 
-    // Optional: Add a button to toggle mood
-    // Uncomment below to enable
-    
-    const button = document.createElement("button");
-    button.innerText = "Toggle Mood";
-    button.style.position = "absolute";
-    button.style.top = "10px";
-    button.style.left = "10px";
-    button.onclick = toggleMood;
-    document.body.appendChild(button);
-    
+    // Resize canvas when exiting fullscreen
+    document.addEventListener("fullscreenchange", () => {
+      if (!document.fullscreenElement) {
+        resizeCanvas();
+      }
+    });
   </script>
 </body>
 </html>
