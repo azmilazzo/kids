@@ -8,54 +8,83 @@
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #1a1a1a;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-        #robot {
-            position: absolute;
+        
+        .robot-container {
+            position: relative;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .robot-body {
             width: 150px;
-            transition: all 0.3s ease;
-            transform-origin: center bottom;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.3));
         }
-        #overlay {
+
+        .robot-eyes {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: #00ff00;
-            padding: 10px;
-            font-family: 'Courier New', monospace;
-            border-radius: 5px;
-            z-index: 1000;
+            top: 28%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            display: flex;
+            justify-content: space-between;
         }
-        #video, #canvas {
-            display: none;
+
+        .eye {
+            width: 15px;
+            height: 22px;
+            background: #00ffff;
+            border-radius: 50%;
+            animation: eye-glow 1.5s infinite alternate;
+        }
+
+        #overlay {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #00ffff33;
+        }
+
+        @keyframes eye-glow {
+            from { box-shadow: 0 0 5px #00ffff; }
+            to { box-shadow: 0 0 15px #00ffff; }
         }
     </style>
 </head>
 <body>
-    <video id="video" autoplay playsinline></video>
-    <canvas id="canvas"></canvas>
-    <div id="overlay">
-        <div>STATUS: <span id="status">INITIALIZING...</span></div>
-        <div>HEAD TILT: <span id="tilt">0°</span></div>
-        <div>MOUTH OPEN: <span id="mouth">0%</span></div>
+    <div class="robot-container">
+        <img src="https://www.freeiconspng.com/uploads/robot-icon-31.png" class="robot-body" alt="Robot">
+        <div class="robot-eyes">
+            <div class="eye left-eye"></div>
+            <div class="eye right-eye"></div>
+        </div>
     </div>
-    <img id="robot" src="https://cdn-icons-png.flaticon.com/512/1046/1046784.png" alt="Robot">
+    
+    <div id="overlay">
+        <div>HEAD TILT: <span id="tiltValue">0°</span></div>
+        <div>EYE STATE: <span id="eyeState">NORMAL</span></div>
+        <div>MODE: <span id="mode">FOLLOWING</span></div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 
     <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const robot = document.getElementById('robot');
-        const statusEl = document.getElementById('status');
-        const tiltEl = document.getElementById('tilt');
-        const mouthEl = document.getElementById('mouth');
-
-        let isBlinking = false;
-        let currentTilt = 0;
-        let mouthOpenness = 0;
+        const robotContainer = document.querySelector('.robot-container');
+        const tiltValue = document.getElementById('tiltValue');
+        const eyeState = document.getElementById('eyeState');
+        const eyes = document.querySelectorAll('.eye');
+        let lastBlink = Date.now();
 
         const faceMesh = new FaceMesh({
             locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
@@ -68,88 +97,56 @@
             minTrackingConfidence: 0.5
         });
 
-        faceMesh.onResults(processFace);
+        faceMesh.onResults((results) => {
+            if (results.multiFaceLandmarks) {
+                const landmarks = results.multiFaceLandmarks[0];
+                const noseTip = landmarks[4];
+                const forehead = landmarks[10];
+                const leftEyeUpper = landmarks[159];
+                const leftEyeLower = landmarks[145];
+                
+                // Calculate head tilt
+                const deltaX = forehead.x - noseTip.x;
+                const deltaY = forehead.y - noseTip.y;
+                const headTilt = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+                
+                // Calculate eye blink
+                const eyeDistance = Math.abs(leftEyeUpper.y - leftEyeLower.y);
+                
+                updateRobot(headTilt, eyeDistance);
+            }
+        });
 
-        new Camera(video, {
+        function updateRobot(tilt, eyeOpenness) {
+            // Mechanical tilt response
+            const targetRotation = -tilt - 90;
+            robotContainer.style.transform = `
+                rotate(${targetRotation}deg)
+                scale(${1 + Math.abs(tilt/500)})
+            `;
+
+            // Eye blink detection
+            if(eyeOpenness < 0.015) {
+                eyes.forEach(eye => eye.style.height = '5px');
+                eyeState.textContent = 'BLINKING';
+                lastBlink = Date.now();
+            } else if(Date.now() - lastBlink > 100) {
+                eyes.forEach(eye => eye.style.height = '22px');
+                eyeState.textContent = 'NORMAL';
+            }
+
+            tiltValue.textContent = `${Math.round(tilt)}°`;
+        }
+
+        // Initialize camera
+        new Camera(document.createElement('video'), {
             onFrame: async () => {
-                await faceMesh.send({image: video});
+                await faceMesh.send({image: camera.video});
             },
             facingMode: 'user',
             width: 320,
             height: 240
         }).start();
-
-        function processFace(results) {
-            if (!results.multiFaceLandmarks) {
-                statusEl.textContent = 'NO FACE DETECTED';
-                return;
-            }
-
-            statusEl.textContent = 'TRACKING';
-            const landmarks = results.multiFaceLandmarks[0];
-            
-            // Head tilt detection (using nose and forehead landmarks)
-            const noseTip = landmarks[4];
-            const forehead = landmarks[10];
-            const tiltAngle = calculateTilt(noseTip, forehead);
-            
-            // Blink detection (left eye landmarks)
-            const leftEyeUpper = landmarks[159];
-            const leftEyeLower = landmarks[145];
-            const blinkValue = detectBlink(leftEyeUpper, leftEyeLower);
-            
-            // Mouth openness detection
-            const mouthUpper = landmarks[13];
-            const mouthLower = landmarks[14];
-            mouthOpenness = Math.abs(mouthUpper.y - mouthLower.y);
-
-            updateRobot(tiltAngle, blinkValue, mouthOpenness);
-            updateUI(tiltAngle, mouthOpenness);
-        }
-
-        function calculateTilt(nose, forehead) {
-            const deltaX = forehead.x - nose.x;
-            const deltaY = forehead.y - nose.y;
-            return Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-        }
-
-        function detectBlink(upper, lower) {
-            const eyeDistance = Math.abs(upper.y - lower.y);
-            return eyeDistance < 0.015 ? 1 : 0;
-        }
-
-        function updateRobot(tilt, blink, mouth) {
-            // Position robot in center
-            const centerX = window.innerWidth/2 - robot.width/2;
-            const centerY = window.innerHeight/2 - robot.height/2;
-            
-            // Apply transformations
-            robot.style.transform = `
-                translate(${centerX}px, ${centerY}px)
-                rotate(${tilt}deg)
-                scale(${1 + mouth * 2})
-            `;
-
-            // Blink animation
-            if(blink && !isBlinking) {
-                robot.style.filter = 'brightness(1.5)';
-                isBlinking = true;
-                setTimeout(() => {
-                    robot.style.filter = 'brightness(1)';
-                    isBlinking = false;
-                }, 200);
-            }
-        }
-
-        function updateUI(tilt, mouth) {
-            tiltEl.textContent = `${Math.round(tilt)}°`;
-            mouthEl.textContent = `${Math.round(mouth * 100)}%`;
-        }
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            robot.style.left = `${window.innerWidth/2 - robot.width/2}px`;
-        });
     </script>
 </body>
 </html>
