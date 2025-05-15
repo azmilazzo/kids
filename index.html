@@ -27,7 +27,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: scaleX(-1); /* This mirrors the video and canvas */
+            transform: scaleX(-1); /* Mirror the video and canvas */
         }
         #overlay {
             position: absolute;
@@ -102,11 +102,6 @@
         }
 
         function onResults(results) {
-            if (!results.multiFaceLandmarks) {
-                updateOverlay("Status: No face detected", "Expression: --");
-                return;
-            }
-
             canvasElement.width = videoElement.videoWidth;
             canvasElement.height = videoElement.videoHeight;
             canvasCtx.save();
@@ -121,7 +116,10 @@
                     const expression = detectExpression(landmarks);
                     updateOverlay("Status: Face detected", `Expression: ${expression}`);
                 }
+            } else {
+                updateOverlay("Status: No face detected", "Expression: --");
             }
+
             canvasCtx.restore();
         }
 
