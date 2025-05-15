@@ -1,217 +1,554 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RoboEyes OLED Simulation</title>
-  <style>
-    body {
-      margin: 0;
-      background-color: #111;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      overflow: hidden;
-    }
-    canvas {
-      image-rendering: pixelated;
-      border: 2px solid #444;
-      max-width: 100%;
-      max-height: 100%;
-    }
-    .controls {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-    }
-    button {
-      padding: 8px 16px;
-      font-size: 14px;
-      cursor: pointer;
-      border: none;
-      border-radius: 5px;
-      background-color: #333;
-      color: white;
-    }
-    button:hover {
-      background-color: #555;
-    }
-    select {
-      padding: 8px;
-      font-size: 14px;
-      border: 1px solid #444;
-      border-radius: 5px;
-      background-color: #222;
-      color: white;
-      margin-right: 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Eyes Expression Simulator</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a1a1a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .robot-face {
+            width: 300px;
+            height: 300px;
+            background-color: #333;
+            border-radius: 10%;
+            position: relative;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .eyes-container {
+            display: flex;
+            justify-content: space-between;
+            width: 220px;
+        }
+
+        .eye {
+            width: 100px;
+            height: 100px;
+            background-color: #222;
+            border: 4px solid #444;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pupil {
+            position: absolute;
+            background-color: #2ecc71;
+            transition: all 0.3s ease;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .expression-btn {
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            border: 2px solid #2ecc71;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .expression-btn:hover {
+            background-color: #444;
+            transform: translateY(-2px);
+        }
+
+        .expression-btn.active {
+            background-color: #2ecc71;
+            color: #222;
+        }
+
+        .animation-controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .animation-btn {
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+            border: 2px solid #2ecc71;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .animation-btn:hover {
+            background-color: #444;
+        }
+
+        .credits {
+            margin-top: 20px;
+            font-size: 12px;
+            text-align: center;
+            color: #777;
+        }
+    </style>
 </head>
 <body>
-  <canvas id="roboEyes" width="128" height="64"></canvas>
-  <div class="controls">
-    <select id="expressionSelect">
-      <option value="regular">Regular</option>
-      <option value="question">Question</option>
-      <option value="sad">Sad</option>
-      <option value="angry">Angry</option>
-      <option value="sleepy">Sleepy</option>
-      <option value="dizzy">Dizzy</option>
-      <option value="love">Love</option>
-      <option value="shocked">Shocked</option>
-    </select>
-    <button id="toggleCuriosity">Toggle Curiosity</button>
-    <button id="toggleFullscreen">Toggle Fullscreen</button>
-  </div>
+    <h1>Robot Eyes Expression Simulator</h1>
+    
+    <div class="container">
+        <div class="robot-face">
+            <div class="eyes-container">
+                <div class="eye left-eye">
+                    <div class="pupil left-pupil"></div>
+                </div>
+                <div class="eye right-eye">
+                    <div class="pupil right-pupil"></div>
+                </div>
+            </div>
+        </div>
 
-  <script>
-    const canvas = document.getElementById("roboEyes");
-    const ctx = canvas.getContext("2d");
+        <div class="controls" id="expressions">
+            <!-- Expression buttons will be added here by JavaScript -->
+        </div>
 
-    // OLED simulation settings
-    const pixelSize = 4;
-    const gridSize = 16; // 16x16 grid per eye
-    const eyeSpacing = 20;
+        <div class="animation-controls">
+            <button class="animation-btn" id="blink-btn">Blink</button>
+            <button class="animation-btn" id="random-btn">Random Expression</button>
+        </div>
+    </div>
 
-    // Expression definitions (each row is 16 characters)
-    const expressions = {
-      regular: [
-        "                ",
-        "                ",
-        "   0000    0000  ",
-        "   0000    0000  ",
-        "                ",
-        "                ",
-        "                ",
-        "                "
-      ],
-      question: [
-        "                ",
-        "                ",
-        "   0000          ",
-        "   0000    0000  ",
-        "   0000    0000  ",
-        "                ",
-        "                ",
-        "                "
-      ],
-      sad: [
-        "                ",
-        "                ",
-        "                ",
-        "                ",
-        "                ",
-        "   0000    0000  ",
-        "   0000    0000  ",
-        "                "
-      ],
-      angry: [
-        "                ",
-        "                ",
-        "   0000    0000  ",
-        "   0000    0000  ",
-        "   0000    0000  ",
-        "                ",
-        "                ",
-        "                "
-      ],
-      sleepy: [
-        "                ",
-        "                ",
-        "   0000    0000  ",
-        "                ",
-        "                ",
-        "                ",
-        "                ",
-        "                "
-      ],
-      dizzy: [
-        "                ",
-        "                ",
-        "   0000    0000  ",
-        "   0000    0000  ",
-        "   0000    0000  ",
-        "   0000    0000  ",
-        "                ",
-        "                "
-      ],
-      love: [
-        "                ",
-        "                ",
-        "   0000    0000  ",
-        "   0000    0000  ",
-        "                ",
-        "                ",
-        "                ",
-        "                "
-      ],
-      shocked: [
-        "                ",
-        "                ",
-        "   0000    0000  ",
-        "   0000    0000  ",
-        "   0000    0000  ",
-        "   0000    0000  ",
-        "                ",
-        "                "
-      ]
-    };
+    <div class="credits">
+        Inspired by the RoboEyes project and OLED panel designs
+    </div>
 
-    let currentExpression = "regular";
-    let isCurious = false;
-    let eyeOffset = 0;
+    <script>
+        // Define all expressions
+        const expressions = [
+            { name: "NEUTRAL", leftEye: "rect", rightEye: "rect", animate: false },
+            { name: "WONDERING", leftEye: "rect", rightEye: "rect", animate: "wonder" },
+            { name: "TIRED", leftEye: "sleepy", rightEye: "sleepy", animate: false },
+            { name: "SKEPTICAL", leftEye: "narrow", rightEye: "narrow", animate: false },
+            { name: "GIVE UP TRYING", leftEye: "cross", rightEye: "cross", animate: "shake" },
+            { name: "SCOLD", leftEye: "angry", rightEye: "angry", animate: false },
+            { name: "SAD", leftEye: "rect", rightEye: "sad", animate: "tear" },
+            { name: "HAPPY", leftEye: "smile", rightEye: "smile", animate: "bounce" },
+            { name: "QUESTIONING", leftEye: "rect", rightEye: "narrow", animate: false },
+            { name: "ANGRY", leftEye: "angry", rightEye: "angry", animate: "shake" },
+            { name: "EXPRESSIONLESS", leftEye: "line", rightEye: "line", animate: false },
+            { name: "LAZY", leftEye: "sleepy", rightEye: "sleepy", animate: "slow" },
+            { name: "WATCHING", leftEye: "rect", rightEye: "rect", animate: "follow" },
+            { name: "CONFOUNDED", leftEye: "cross", rightEye: "cross", animate: "spin" },
+            { name: "DIZZY", leftEye: "spiral", rightEye: "spiral", animate: "spin" },
+            { name: "LOVE", leftEye: "heart", rightEye: "heart", animate: "pulse" }
+        ];
 
-    function drawPixelGrid(grid) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // DOM references
+        const leftPupil = document.querySelector('.left-pupil');
+        const rightPupil = document.querySelector('.right-pupil');
+        const expressionsContainer = document.getElementById('expressions');
+        const blinkBtn = document.getElementById('blink-btn');
+        const randomBtn = document.getElementById('random-btn');
 
-      const leftEyeX = 16 + eyeOffset;
-      const rightEyeX = 16 + eyeSpacing + eyeOffset;
+        // Current expression and animation state
+        let currentExpression = "NEUTRAL";
+        let animationInterval = null;
+        let blinking = false;
 
-      // Draw left eye
-      for (let y = 0; y < grid.length; y++) {
-        for (let x = 0; x < grid[y].length; x++) {
-          if (grid[y][x] === "0") {
-            ctx.fillStyle = "#00ff00";
-            ctx.fillRect(leftEyeX + x * pixelSize, y * pixelSize, pixelSize, pixelSize);
-          }
+        // Add expression buttons to the UI
+        expressions.forEach(exp => {
+            const button = document.createElement('button');
+            button.className = 'expression-btn';
+            button.textContent = exp.name;
+            button.dataset.expression = exp.name;
+            
+            if (exp.name === "NEUTRAL") {
+                button.classList.add('active');
+            }
+            
+            button.addEventListener('click', () => {
+                setExpression(exp.name);
+                
+                // Update active button
+                document.querySelectorAll('.expression-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+            });
+            
+            expressionsContainer.appendChild(button);
+        });
+
+        // Function to set the eye shape based on expression
+        function setExpression(expressionName) {
+            // Clear any running animations
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+            }
+
+            currentExpression = expressionName;
+            const expression = expressions.find(exp => exp.name === expressionName);
+            
+            if (!expression) return;
+            
+            // Set the left eye
+            setEyeShape(leftPupil, expression.leftEye);
+            
+            // Set the right eye
+            setEyeShape(rightPupil, expression.rightEye);
+            
+            // Start animation if applicable
+            if (expression.animate && expression.animate !== false) {
+                startAnimation(expression.animate);
+            }
         }
-      }
 
-      // Draw right eye
-      for (let y = 0; y < grid.length; y++) {
-        for (let x = 0; x < grid[y].length; x++) {
-          if (grid[y][x] === "0") {
-            ctx.fillStyle = "#00ff00";
-            ctx.fillRect(rightEyeX + x * pixelSize, y * pixelSize, pixelSize, pixelSize);
-          }
+        // Function to set an eye shape
+        function setEyeShape(pupilElement, shape) {
+            // Reset styles
+            pupilElement.style.width = '';
+            pupilElement.style.height = '';
+            pupilElement.style.borderRadius = '';
+            pupilElement.style.transform = '';
+            pupilElement.style.top = '';
+            pupilElement.style.left = '';
+            pupilElement.style.backgroundColor = '#2ecc71';
+            pupilElement.innerHTML = '';
+
+            switch (shape) {
+                case "rect":  // Default rectangular pupil
+                    pupilElement.style.width = '40px';
+                    pupilElement.style.height = '40px';
+                    pupilElement.style.top = '30px';
+                    pupilElement.style.left = '30px';
+                    break;
+                    
+                case "sleepy":  // Tired/sleepy eyes
+                    pupilElement.style.width = '40px';
+                    pupilElement.style.height = '10px';
+                    pupilElement.style.top = '45px';
+                    pupilElement.style.left = '30px';
+                    break;
+                    
+                case "narrow":  // Skeptical/questioning
+                    pupilElement.style.width = '40px';
+                    pupilElement.style.height = '15px';
+                    pupilElement.style.top = '42px';
+                    pupilElement.style.left = '30px';
+                    break;
+                    
+                case "cross":  // X eyes (give up/confounded)
+                    pupilElement.style.width = '40px';
+                    pupilElement.style.height = '40px';
+                    pupilElement.style.top = '30px';
+                    pupilElement.style.left = '30px';
+                    pupilElement.innerHTML = '<svg width="40" height="40" viewBox="0 0 40 40"><line x1="10" y1="10" x2="30" y2="30" stroke="#2ecc71" stroke-width="6"/><line x1="30" y1="10" x2="10" y2="30" stroke="#2ecc71" stroke-width="6"/></svg>';
+                    pupilElement.style.backgroundColor = 'transparent';
+                    break;
+                    
+                case "angry":  // Angry eyes
+                    pupilElement.style.width = '40px';
+                    pupilElement.style.height = '20px';
+                    pupilElement.style.top = '40px';
+                    pupilElement.style.left = '30px';
+                    pupilElement.style.transform = 'rotate(-15deg)';
+                    break;
+                    
+                case "line":  // Expressionless
+                    pupilElement.style.width = '40px';
+                    pupilElement.style.height = '8px';
+                    pupilElement.style.top = '46px';
+                    pupilElement.style.left = '30px';
+                    break;
+                    
+                case "sad":  // Sad eye
+                    pupilElement.style.width = '40px';
+                    pupilElement.style.height = '20px';
+                    pupilElement.style.borderRadius = '50% 50% 0 0';
+                    pupilElement.style.top = '50px';
+                    pupilElement.style.left = '30px';
+                    pupilElement.style.transform = 'rotate(180deg)';
+                    break;
+                    
+                case "smile":  // Happy eyes
+                    pupilElement.style.width = '40px';
+                    pupilElement.style.height = '20px';
+                    pupilElement.style.borderRadius = '0 0 20px 20px';
+                    pupilElement.style.top = '40px';
+                    pupilElement.style.left = '30px';
+                    break;
+                    
+                case "heart":  // Love eyes
+                    pupilElement.style.width = '40px';
+                    pupilElement.style.height = '40px';
+                    pupilElement.style.top = '30px';
+                    pupilElement.style.left = '30px';
+                    pupilElement.innerHTML = '<svg width="40" height="40" viewBox="0 0 40 40"><path d="M20 10 L10 20 A10 10 0 0 0 20 35 A10 10 0 0 0 30 20 L20 10 Z" fill="#2ecc71"/></svg>';
+                    pupilElement.style.backgroundColor = 'transparent';
+                    break;
+                    
+                case "spiral":  // Dizzy eyes
+                    pupilElement.style.width = '40px';
+                    pupilElement.style.height = '40px';
+                    pupilElement.style.top = '30px';
+                    pupilElement.style.left = '30px';
+                    pupilElement.innerHTML = '<svg width="40" height="40" viewBox="0 0 40 40"><path d="M20,20 m-15,0 a15,15 0 1,1 30,0 a12,12 0 1,0 -24,0 a9,9 0 1,1 18,0 a6,6 0 1,0 -12,0 a3,3 0 1,1 6,0" stroke="#2ecc71" stroke-width="4" fill="none"/></svg>';
+                    pupilElement.style.backgroundColor = 'transparent';
+                    break;
+            }
         }
-      }
-    }
 
-    function updateCuriosity() {
-      if (!isCurious) return;
-      eyeOffset = Math.sin(performance.now() * 0.002) * 10;
-      drawPixelGrid(expressions[currentExpression]);
-    }
+        // Function to start animations
+        function startAnimation(animationType) {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+            }
+            
+            switch (animationType) {
+                case "bounce":
+                    let bounceUp = true;
+                    animationInterval = setInterval(() => {
+                        const topPos = parseInt(leftPupil.style.top);
+                        if (bounceUp) {
+                            leftPupil.style.top = (topPos - 2) + 'px';
+                            rightPupil.style.top = (topPos - 2) + 'px';
+                            if (topPos <= 30) bounceUp = false;
+                        } else {
+                            leftPupil.style.top = (topPos + 2) + 'px';
+                            rightPupil.style.top = (topPos + 2) + 'px';
+                            if (topPos >= 45) bounceUp = true;
+                        }
+                    }, 100);
+                    break;
+                    
+                case "shake":
+                    let shakeRight = true;
+                    animationInterval = setInterval(() => {
+                        const leftPos = parseInt(leftPupil.style.left);
+                        if (shakeRight) {
+                            leftPupil.style.left = (leftPos + 3) + 'px';
+                            rightPupil.style.left = (leftPos + 3) + 'px';
+                            if (leftPos >= 35) shakeRight = false;
+                        } else {
+                            leftPupil.style.left = (leftPos - 3) + 'px';
+                            rightPupil.style.left = (leftPos - 3) + 'px';
+                            if (leftPos <= 25) shakeRight = true;
+                        }
+                    }, 80);
+                    break;
+                    
+                case "spin":
+                    let angle = 0;
+                    animationInterval = setInterval(() => {
+                        angle = (angle + 10) % 360;
+                        leftPupil.style.transform = `rotate(${angle}deg)`;
+                        rightPupil.style.transform = `rotate(${angle}deg)`;
+                    }, 50);
+                    break;
+                    
+                case "follow":
+                    document.addEventListener('mousemove', trackMouse);
+                    break;
+                    
+                case "pulse":
+                    let growing = true;
+                    animationInterval = setInterval(() => {
+                        const width = parseInt(leftPupil.style.width);
+                        if (growing) {
+                            const newSize = width + 2;
+                            leftPupil.style.width = newSize + 'px';
+                            leftPupil.style.height = newSize + 'px';
+                            rightPupil.style.width = newSize + 'px';
+                            rightPupil.style.height = newSize + 'px';
+                            leftPupil.style.top = (30 - (newSize - 40)/2) + 'px';
+                            leftPupil.style.left = (30 - (newSize - 40)/2) + 'px';
+                            rightPupil.style.top = (30 - (newSize - 40)/2) + 'px';
+                            rightPupil.style.left = (30 - (newSize - 40)/2) + 'px';
+                            if (newSize >= 50) growing = false;
+                        } else {
+                            const newSize = width - 2;
+                            leftPupil.style.width = newSize + 'px';
+                            leftPupil.style.height = newSize + 'px';
+                            rightPupil.style.width = newSize + 'px';
+                            rightPupil.style.height = newSize + 'px';
+                            leftPupil.style.top = (30 - (newSize - 40)/2) + 'px';
+                            leftPupil.style.left = (30 - (newSize - 40)/2) + 'px';
+                            rightPupil.style.top = (30 - (newSize - 40)/2) + 'px';
+                            rightPupil.style.left = (30 - (newSize - 40)/2) + 'px';
+                            if (newSize <= 30) growing = true;
+                        }
+                    }, 100);
+                    break;
+                    
+                case "wonder":
+                    let lookingUp = true;
+                    animationInterval = setInterval(() => {
+                        const topPos = parseInt(leftPupil.style.top);
+                        if (lookingUp) {
+                            leftPupil.style.top = (topPos - 1) + 'px';
+                            rightPupil.style.top = (topPos - 1) + 'px';
+                            if (topPos <= 20) lookingUp = false;
+                        } else {
+                            leftPupil.style.top = (topPos + 1) + 'px';
+                            rightPupil.style.top = (topPos + 1) + 'px';
+                            if (topPos >= 40) lookingUp = true;
+                        }
+                    }, 100);
+                    break;
+                    
+                case "tear":
+                    animationInterval = setInterval(() => {
+                        // Simulate a tear by creating and animating a drop element
+                        const tearDrop = document.createElement('div');
+                        tearDrop.style.position = 'absolute';
+                        tearDrop.style.width = '8px';
+                        tearDrop.style.height = '15px';
+                        tearDrop.style.backgroundColor = '#2ecc71';
+                        tearDrop.style.borderRadius = '50%';
+                        tearDrop.style.top = '70px';
+                        tearDrop.style.left = '50px';
+                        tearDrop.style.opacity = '0.8';
+                        document.querySelector('.right-eye').appendChild(tearDrop);
+                        
+                        let topPos = 70;
+                        const tearInterval = setInterval(() => {
+                            topPos += 3;
+                            tearDrop.style.top = topPos + 'px';
+                            if (topPos > 100) {
+                                clearInterval(tearInterval);
+                                tearDrop.remove();
+                            }
+                        }, 50);
+                    }, 2000);
+                    break;
+                    
+                case "slow":
+                    // Slow blinking for lazy eyes
+                    animationInterval = setInterval(() => {
+                        blink(1000);
+                    }, 3000);
+                    break;
+            }
+        }
 
-    document.getElementById("expressionSelect").addEventListener("change", (e) => {
-      currentExpression = e.target.value;
-      drawPixelGrid(expressions[currentExpression]);
-    });
+        // Mouse tracking for watching expression
+        function trackMouse(e) {
+            const robotFace = document.querySelector('.robot-face');
+            const rect = robotFace.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            const deltaX = (e.clientX - centerX) / 20;
+            const deltaY = (e.clientY - centerY) / 20;
+            
+            // Limit movement range
+            const limitedDeltaX = Math.max(-10, Math.min(10, deltaX));
+            const limitedDeltaY = Math.max(-10, Math.min(10, deltaY));
+            
+            // Update eye positions
+            leftPupil.style.left = (30 + limitedDeltaX) + 'px';
+            rightPupil.style.left = (30 + limitedDeltaX) + 'px';
+            leftPupil.style.top = (30 + limitedDeltaY) + 'px';
+            rightPupil.style.top = (30 + limitedDeltaY) + 'px';
+        }
 
-    document.getElementById("toggleCuriosity").addEventListener("click", () => {
-      isCurious = !isCurious;
-      eyeOffset = 0;
-      drawPixelGrid(expressions[currentExpression]);
-    });
+        // Remove mouse tracking when changing expressions
+        function removeMouseTracking() {
+            document.removeEventListener('mousemove', trackMouse);
+        }
 
-    setInterval(updateCuriosity, 16); // ~60fps
+        // Blink animation
+        function blink(duration = 300) {
+            if (blinking) return;
+            
+            blinking = true;
+            
+            // Store original heights
+            const originalLeftHeight = leftPupil.style.height;
+            const originalRightHeight = rightPupil.style.height;
+            const originalLeftTop = leftPupil.style.top;
+            const originalRightTop = rightPupil.style.top;
+            
+            // Close eyes
+            leftPupil.style.height = '2px';
+            rightPupil.style.height = '2px';
+            leftPupil.style.top = '49px';
+            rightPupil.style.top = '49px';
+            
+            // Open eyes after duration
+            setTimeout(() => {
+                leftPupil.style.height = originalLeftHeight;
+                rightPupil.style.height = originalRightHeight;
+                leftPupil.style.top = originalLeftTop;
+                rightPupil.style.top = originalRightTop;
+                blinking = false;
+            }, duration);
+        }
 
-    drawPixelGrid(expressions[currentExpression]);
-  </script>
+        // Blink button event
+        blinkBtn.addEventListener('click', () => {
+            blink();
+        });
+
+        // Random expression button event
+        randomBtn.addEventListener('click', () => {
+            const randomIndex = Math.floor(Math.random() * expressions.length);
+            const randomExpression = expressions[randomIndex].name;
+            
+            // Update UI to reflect the new expression
+            document.querySelectorAll('.expression-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.expression === randomExpression) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            setExpression(randomExpression);
+        });
+
+        // Initialize with neutral expression
+        setExpression("NEUTRAL");
+        
+        // Add occasional random blinking
+        setInterval(() => {
+            // 20% chance to blink each 3 seconds
+            if (Math.random() < 0.2) {
+                blink();
+            }
+        }, 3000);
+    </script>
 </body>
 </html>
