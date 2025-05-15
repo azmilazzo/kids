@@ -249,83 +249,95 @@
             pupilElement.innerHTML = '';
 
             switch (shape) {
-                case "rect":  // Default rectangular pupil
-                    pupilElement.style.width = '40px';
-                    pupilElement.style.height = '40px';
-                    pupilElement.style.top = '30px';
-                    pupilElement.style.left = '30px';
+                case "rect":  // Default rectangular pupil - for NEUTRAL and some others
+                    pupilElement.style.width = '30px';
+                    pupilElement.style.height = '30px';
+                    pupilElement.style.top = '35px';
+                    pupilElement.style.left = '35px';
                     break;
                     
-                case "sleepy":  // Tired/sleepy eyes
-                    pupilElement.style.width = '40px';
-                    pupilElement.style.height = '10px';
-                    pupilElement.style.top = '45px';
-                    pupilElement.style.left = '30px';
-                    break;
-                    
-                case "narrow":  // Skeptical/questioning
-                    pupilElement.style.width = '40px';
-                    pupilElement.style.height = '15px';
-                    pupilElement.style.top = '42px';
-                    pupilElement.style.left = '30px';
-                    break;
-                    
-                case "cross":  // X eyes (give up/confounded)
-                    pupilElement.style.width = '40px';
-                    pupilElement.style.height = '40px';
-                    pupilElement.style.top = '30px';
-                    pupilElement.style.left = '30px';
-                    pupilElement.innerHTML = '<svg width="40" height="40" viewBox="0 0 40 40"><line x1="10" y1="10" x2="30" y2="30" stroke="#2ecc71" stroke-width="6"/><line x1="30" y1="10" x2="10" y2="30" stroke="#2ecc71" stroke-width="6"/></svg>';
-                    pupilElement.style.backgroundColor = 'transparent';
-                    break;
-                    
-                case "angry":  // Angry eyes
-                    pupilElement.style.width = '40px';
-                    pupilElement.style.height = '20px';
-                    pupilElement.style.top = '40px';
-                    pupilElement.style.left = '30px';
-                    pupilElement.style.transform = 'rotate(-15deg)';
-                    break;
-                    
-                case "line":  // Expressionless
-                    pupilElement.style.width = '40px';
+                case "sleepy":  // Tired eyes (horizontal narrow rectangles)
+                    pupilElement.style.width = '30px';
                     pupilElement.style.height = '8px';
                     pupilElement.style.top = '46px';
-                    pupilElement.style.left = '30px';
+                    pupilElement.style.left = '35px';
                     break;
                     
-                case "sad":  // Sad eye
-                    pupilElement.style.width = '40px';
-                    pupilElement.style.height = '20px';
-                    pupilElement.style.borderRadius = '50% 50% 0 0';
-                    pupilElement.style.top = '50px';
-                    pupilElement.style.left = '30px';
-                    pupilElement.style.transform = 'rotate(180deg)';
+                case "narrow":  // Skeptical eyes (horizontal slightly narrowed rectangles)
+                    pupilElement.style.width = '30px';
+                    pupilElement.style.height = '15px';
+                    pupilElement.style.top = '42px';
+                    pupilElement.style.left = '35px';
                     break;
                     
-                case "smile":  // Happy eyes
-                    pupilElement.style.width = '40px';
-                    pupilElement.style.height = '20px';
-                    pupilElement.style.borderRadius = '0 0 20px 20px';
-                    pupilElement.style.top = '40px';
-                    pupilElement.style.left = '30px';
-                    break;
-                    
-                case "heart":  // Love eyes
-                    pupilElement.style.width = '40px';
-                    pupilElement.style.height = '40px';
-                    pupilElement.style.top = '30px';
-                    pupilElement.style.left = '30px';
-                    pupilElement.innerHTML = '<svg width="40" height="40" viewBox="0 0 40 40"><path d="M20 10 L10 20 A10 10 0 0 0 20 35 A10 10 0 0 0 30 20 L20 10 Z" fill="#2ecc71"/></svg>';
+                case "cross":  // X eyes (give up trying)
+                    pupilElement.style.width = '30px';
+                    pupilElement.style.height = '30px';
+                    pupilElement.style.top = '35px';
+                    pupilElement.style.left = '35px';
+                    pupilElement.innerHTML = '<svg width="30" height="30" viewBox="0 0 30 30"><line x1="5" y1="5" x2="25" y2="25" stroke="#2ecc71" stroke-width="5"/><line x1="25" y1="5" x2="5" y2="25" stroke="#2ecc71" stroke-width="5"/></svg>';
                     pupilElement.style.backgroundColor = 'transparent';
                     break;
                     
-                case "spiral":  // Dizzy eyes
-                    pupilElement.style.width = '40px';
-                    pupilElement.style.height = '40px';
-                    pupilElement.style.top = '30px';
-                    pupilElement.style.left = '30px';
-                    pupilElement.innerHTML = '<svg width="40" height="40" viewBox="0 0 40 40"><path d="M20,20 m-15,0 a15,15 0 1,1 30,0 a12,12 0 1,0 -24,0 a9,9 0 1,1 18,0 a6,6 0 1,0 -12,0 a3,3 0 1,1 6,0" stroke="#2ecc71" stroke-width="4" fill="none"/></svg>';
+                case "angry":  // Angry eyes (diagonal rectangles, pointing inward)
+                    pupilElement.style.width = '30px';
+                    pupilElement.style.height = '10px';
+                    pupilElement.style.top = '45px';
+                    if (pupilElement.classList.contains('left-pupil')) {
+                        pupilElement.style.transform = 'rotate(30deg)';
+                        pupilElement.style.left = '35px';
+                    } else {
+                        pupilElement.style.transform = 'rotate(-30deg)';
+                        pupilElement.style.left = '35px';
+                    }
+                    break;
+                    
+                case "line":  // Expressionless (thin horizontal lines)
+                    pupilElement.style.width = '30px';
+                    pupilElement.style.height = '5px';
+                    pupilElement.style.top = '47px';
+                    pupilElement.style.left = '35px';
+                    break;
+                    
+                case "sad":  // Sad eye (winking one eye)
+                    if (pupilElement.classList.contains('left-pupil')) {
+                        // Left eye is normal
+                        pupilElement.style.width = '30px';
+                        pupilElement.style.height = '30px';
+                        pupilElement.style.top = '35px';
+                        pupilElement.style.left = '35px';
+                    } else {
+                        // Right eye is winking down
+                        pupilElement.style.width = '30px';
+                        pupilElement.style.height = '15px';
+                        pupilElement.style.top = '55px';
+                        pupilElement.style.left = '35px';
+                    }
+                    break;
+                    
+                case "smile":  // Happy eyes (upside-down U shapes)
+                    pupilElement.style.width = '30px';
+                    pupilElement.style.height = '15px';
+                    pupilElement.style.top = '55px';
+                    pupilElement.style.left = '35px';
+                    pupilElement.style.borderRadius = '0 0 15px 15px';
+                    break;
+                    
+                case "heart":  // Love eyes (heart shapes)
+                    pupilElement.style.width = '30px';
+                    pupilElement.style.height = '30px';
+                    pupilElement.style.top = '35px';
+                    pupilElement.style.left = '35px';
+                    pupilElement.innerHTML = '<svg width="30" height="30" viewBox="0 0 30 30"><path d="M15 10 L10 5 A5 5 0 0 0 5 15 L15 25 L25 15 A5 5 0 0 0 20 5 L15 10 Z" fill="#2ecc71"/></svg>';
+                    pupilElement.style.backgroundColor = 'transparent';
+                    break;
+                    
+                case "spiral":  // Dizzy eyes (spiral / target circles - matching image)
+                    pupilElement.style.width = '30px';
+                    pupilElement.style.height = '30px';
+                    pupilElement.style.top = '35px';
+                    pupilElement.style.left = '35px';
+                    pupilElement.innerHTML = '<svg width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" stroke="#2ecc71" stroke-width="4" fill="none"/><circle cx="15" cy="15" r="4" fill="#2ecc71"/></svg>';
                     pupilElement.style.backgroundColor = 'transparent';
                     break;
             }
