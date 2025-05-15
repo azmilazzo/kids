@@ -79,6 +79,7 @@
     let blinkTimer = null;
     let currentExpression = "happy";
     let eyeOffset = 0; // For curiosity movement
+    let leftX, rightX; // Declare here for global access
 
     // Define all expressions
     const expressions = {
@@ -212,8 +213,8 @@
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Calculate eye positions with offset for curiosity
-      const leftX = 32 + eyeOffset;
-      const rightX = 32 + spacing + eyeOffset;
+      leftX = 32 + eyeOffset;
+      rightX = 32 + spacing + eyeOffset;
 
       // Draw selected expression
       expressions[currentExpression]();
