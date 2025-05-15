@@ -1,60 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Robot Eyes Animation</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #111;
-            overflow: hidden;
-        }
-        canvas {
-            background-color: #222;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RoboEyes Animation</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    canvas {
+      image-rendering: pixelated; /* Crisp pixel look */
+      border: 2px solid #444;
+    }
+  </style>
 </head>
 <body>
-    <canvas id="eyesCanvas" width="400" height="400"></canvas>
+  <canvas id="roboEyes" width="128" height="64"></canvas>
 
-    <script>
-        const canvas = document.getElementById('eyesCanvas');
-        const ctx = canvas.getContext('2d');
+  <script>
+    const canvas = document.getElementById("roboEyes");
+    const ctx = canvas.getContext("2d");
 
-        function drawEye(x, y, size, expression) {
-            ctx.clearRect(x - size, y - size, size * 2, size * 2);
-            ctx.beginPath();
-            ctx.arc(x, y, size, 0, Math.PI * 2);
-            ctx.fillStyle = '#00FF00';
-            ctx.fill();
+    // Eye properties
+    let eyeWidth = 30;
+    let eyeHeight = 20;
+    let spacing = 40;
+    let isBlinking = false;
+    let blinkTimer = null;
 
-            ctx.beginPath();
-            if (expression === 'happy') {
-                ctx.arc(x, y + size / 4, size / 2, 0, Math.PI, false);
-            } else if (expression === 'sad') {
-                ctx.arc(x, y + size / 2, size / 2, Math.PI, 0, true);
-            } else if (expression === 'surprised') {
-                ctx.arc(x, y, size / 2, 0, Math.PI * 2, true);
-            }
-            ctx.strokeStyle = '#000';
-            ctx.stroke();
+    // Mood toggle
+    let isHappy = true;
+
+    // Draw eyes
+    function drawEyes() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Background
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Eyes
+      ctx.fillStyle = isHappy ? "#00ff00" : "#ffff00"; // Happy = green, Neutral = yellow
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2;
+
+      // Left eye
+      ctx.beginPath();
+      ctx.roundRect(32, 24, eyeWidth, eyeHeight, 5);
+      ctx.fill();
+      ctx.stroke();
+
+      // Right eye (mirror left)
+      ctx.beginPath();
+      ctx.roundRect(32 + spacing, 24, eyeWidth, eyeHeight, 5);
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    // Blink animation
+    function blink() {
+      if (isBlinking) return;
+      isBlinking = true;
+
+      let targetHeight = 0;
+      let currentHeight = eyeHeight;
+      const duration = 200; // ms
+      const startTime = performance.now();
+
+      function animateBlink(time) {
+        const elapsed = time - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        currentHeight = eyeHeight * (1 - progress);
+        eyeHeight = currentHeight;
+        drawEyes();
+
+        if (progress < 1) {
+          requestAnimationFrame(animateBlink);
+        } else {
+          isBlinking = false;
+          setTimeout(() => {
+            eyeHeight = 20; // Reset after blink
+            drawEyes();
+          }, 200); // Small pause before eyes open
         }
+      }
 
-        function animateEyes() {
-            setInterval(() => {
-                drawEye(150, 200, 30, 'happy');
-                drawEye(250, 200, 30, 'sad');
-            }, 1000);
-        }
+      requestAnimationFrame(animateBlink);
+    }
 
-        animateEyes();
-    </script>
+    // Random blink every 5-10 seconds
+    function scheduleBlink() {
+      const delay = Math.random() * 5000 + 5000; // 5-10s
+      blinkTimer = setTimeout(() => {
+        blink();
+        scheduleBlink();
+      }, delay);
+    }
+
+    // Toggle mood (happy/neutral)
+    function toggleMood() {
+      isHappy = !isHappy;
+      drawEyes();
+    }
+
+    // Initial setup
+    drawEyes();
+    scheduleBlink();
+
+    // Optional: Add a button to toggle mood
+    // Uncomment below to enable
+    /*
+    const button = document.createElement("button");
+    button.innerText = "Toggle Mood";
+    button.style.position = "absolute";
+    button.style.top = "10px";
+    button.style.left = "10px";
+    button.onclick = toggleMood;
+    document.body.appendChild(button);
+    */
+  </script>
 </body>
 </html>
