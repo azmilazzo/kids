@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Robot Eye Animation</title>
+    <title>Robot Eyes Animation</title>
     <style>
         body, html {
             margin: 0;
@@ -13,103 +13,48 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #333;
+            background-color: #111;
             overflow: hidden;
         }
         canvas {
-            background-color: #333;
-        }
-        #expression-select {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 10px;
-            background-color: rgba(255, 255, 255, 0.8);
-            border-radius: 5px;
+            background-color: #222;
         }
     </style>
 </head>
 <body>
-    <select id="expression-select">
-        <option value="Happy">Happy</option>
-        <option value="Sad">Sad</option>
-        <option value="Surprised">Surprised</option>
-        <option value="Neutral">Neutral</option>
-    </select>
-    <canvas id="robotCanvas" width="400" height="400"></canvas>
+    <canvas id="eyesCanvas" width="400" height="400"></canvas>
 
     <script>
-        const canvasElement = document.getElementById('robotCanvas');
-        const canvasCtx = canvasElement.getContext('2d');
-        const expressionSelect = document.getElementById('expression-select');
+        const canvas = document.getElementById('eyesCanvas');
+        const ctx = canvas.getContext('2d');
 
-        expressionSelect.addEventListener('change', (event) => {
-            drawRobotExpression(event.target.value);
-        });
+        function drawEye(x, y, size, expression) {
+            ctx.clearRect(x - size, y - size, size * 2, size * 2);
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fillStyle = '#00FF00';
+            ctx.fill();
 
-        function drawRobotExpression(expression) {
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-
-            switch (expression) {
-                case "Happy":
-                    drawHappyEyes();
-                    break;
-                case "Sad":
-                    drawSadEyes();
-                    break;
-                case "Surprised":
-                    drawSurprisedEyes();
-                    break;
-                default:
-                    drawNeutralEyes();
-                    break;
+            ctx.beginPath();
+            if (expression === 'happy') {
+                ctx.arc(x, y + size / 4, size / 2, 0, Math.PI, false);
+            } else if (expression === 'sad') {
+                ctx.arc(x, y + size / 2, size / 2, Math.PI, 0, true);
+            } else if (expression === 'surprised') {
+                ctx.arc(x, y, size / 2, 0, Math.PI * 2, true);
             }
+            ctx.strokeStyle = '#000';
+            ctx.stroke();
         }
 
-        function drawHappyEyes() {
-            drawEye(160, 200, true); // Draw smiling eyes
-            drawEye(240, 200, true);
+        function animateEyes() {
+            setInterval(() => {
+                drawEye(150, 200, 30, 'happy');
+                drawEye(250, 200, 30, 'sad');
+            }, 1000);
         }
 
-        function drawSadEyes() {
-            drawEye(160, 200, false, true); // Draw sad eyes
-            drawEye(240, 200, false, true);
-        }
-
-        function drawSurprisedEyes() {
-            drawEye(160, 200, false, false, true); // Draw surprised eyes
-            drawEye(240, 200, false, false, true);
-        }
-
-        function drawNeutralEyes() {
-            drawEye(160, 200); // Draw neutral eyes
-            drawEye(240, 200);
-        }
-
-        function drawEye(x, y, happy = false, sad = false, surprised = false) {
-            canvasCtx.beginPath();
-            canvasCtx.fillStyle = '#00FF00';
-            if (happy) {
-                // Happy eyes (smiling)
-                canvasCtx.arc(x, y, 20, 0, Math.PI, false);
-            } else if (sad) {
-                // Sad eyes (frowning)
-                canvasCtx.arc(x, y + 10, 20, Math.PI, 0, true);
-            } else if (surprised) {
-                // Surprised eyes (wide open)
-                canvasCtx.arc(x, y, 20, 0, Math.PI * 2, true);
-            } else {
-                // Neutral eyes
-                canvasCtx.arc(x, y, 10, 0, Math.PI * 2, true);
-            }
-            canvasCtx.fill();
-            canvasCtx.strokeStyle = '#000';
-            canvasCtx.lineWidth = 3;
-            canvasCtx.stroke();
-        }
-
-        // Initialize with the default expression
-        drawRobotExpression("Happy");
+        animateEyes();
     </script>
 </body>
 </html>
