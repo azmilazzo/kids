@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RoboEyes Animation</title>
+  <title>RoboEyes OLED Simulation</title>
   <style>
     body {
       margin: 0;
@@ -53,11 +53,10 @@
   <canvas id="roboEyes" width="128" height="64"></canvas>
   <div class="controls">
     <select id="expressionSelect">
-      <option value="happy">Happy</option>
-      <option value="neutral">Neutral</option>
-      <option value="angry">Angry</option>
+      <option value="regular">Regular</option>
+      <option value="question">Question</option>
       <option value="sad">Sad</option>
-      <option value="heart_eyes">Heart Eyes</option>
+      <option value="angry">Angry</option>
       <option value="sleepy">Sleepy</option>
       <option value="dizzy">Dizzy</option>
       <option value="love">Love</option>
@@ -71,254 +70,148 @@
     const canvas = document.getElementById("roboEyes");
     const ctx = canvas.getContext("2d");
 
-    // Eye properties
-    let eyeWidth = 30;
-    let eyeHeight = 20;
-    let spacing = 40;
-    let isBlinking = false;
-    let blinkTimer = null;
-    let currentExpression = "happy";
-    let eyeOffset = 0; // For curiosity movement
-    let leftX, rightX; // Declare here for global access
-    let isCurious = false; // Missing variable added
+    // OLED simulation settings
+    const pixelSize = 4;
+    const gridSize = 16; // 16x16 grid per eye
+    const eyeSpacing = 20;
 
-    // Define all expressions
+    // Expression definitions (each row is 16 characters)
     const expressions = {
-      happy: () => {
-        ctx.fillStyle = "#00ff00";
-        ctx.beginPath();
-        ctx.roundRect(leftX, 24, eyeWidth, eyeHeight, 5);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.roundRect(rightX, 24, eyeWidth, eyeHeight, 5);
-        ctx.fill();
-        ctx.stroke();
-      },
-      neutral: () => {
-        ctx.fillStyle = "#ffff00";
-        ctx.beginPath();
-        ctx.roundRect(leftX, 24, eyeWidth, eyeHeight, 5);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.roundRect(rightX, 24, eyeWidth, eyeHeight, 5);
-        ctx.fill();
-        ctx.stroke();
-      },
-      angry: () => {
-        ctx.fillStyle = "#ff0000";
-        ctx.beginPath();
-        ctx.moveTo(leftX + 5, 24);
-        ctx.lineTo(leftX + 25, 18);
-        ctx.lineTo(leftX + 25, 24);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.moveTo(rightX + 5, 24);
-        ctx.lineTo(rightX + 25, 18);
-        ctx.lineTo(rightX + 25, 24);
-        ctx.closePath();
-        ctx.fill();
-      },
-      sad: () => {
-        ctx.fillStyle = "#0000ff";
-        ctx.beginPath();
-        ctx.arc(leftX + 17.5, 34, 10, Math.PI, 0);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(rightX + 17.5, 34, 10, Math.PI, 0);
-        ctx.closePath();
-        ctx.fill();
-      },
-      heart_eyes: () => {
-        ctx.fillStyle = "#ff00ff";
-        ctx.beginPath();
-        ctx.arc(leftX + 17.5, 29, 5, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(rightX + 17.5, 29, 5, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-      },
-      sleepy: () => {
-        ctx.fillStyle = "#aaaaaa";
-        ctx.fillRect(leftX, 24, eyeWidth, 5);
-        ctx.fillRect(rightX, 24, eyeWidth, 5);
-      },
-      dizzy: () => {
-        ctx.fillStyle = "#ffff00";
-        ctx.beginPath();
-        ctx.arc(leftX + 17.5, 29, 5, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(rightX + 17.5, 29, 5, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(leftX + 17.5, 29, 8, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(rightX + 17.5, 29, 8, 0, Math.PI * 2);
-        ctx.stroke();
-      },
-      love: () => {
-        ctx.fillStyle = "#ff00ff";
-        ctx.beginPath();
-        ctx.arc(leftX + 17.5, 29, 5, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(rightX + 17.5, 29, 5, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.font = "10px Arial";
-        ctx.fillText("❤️", leftX + 12, 35);
-        ctx.fillText("❤️", rightX + 12, 35);
-      },
-      shocked: () => {
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.arc(leftX + 17.5, 29, 5, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(rightX + 17.5, 29, 5, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-      }
+      regular: [
+        "                ",
+        "                ",
+        "   0000    0000  ",
+        "   0000    0000  ",
+        "                ",
+        "                ",
+        "                ",
+        "                "
+      ],
+      question: [
+        "                ",
+        "                ",
+        "   0000          ",
+        "   0000    0000  ",
+        "   0000    0000  ",
+        "                ",
+        "                ",
+        "                "
+      ],
+      sad: [
+        "                ",
+        "                ",
+        "                ",
+        "                ",
+        "                ",
+        "   0000    0000  ",
+        "   0000    0000  ",
+        "                "
+      ],
+      angry: [
+        "                ",
+        "                ",
+        "   0000    0000  ",
+        "   0000    0000  ",
+        "   0000    0000  ",
+        "                ",
+        "                ",
+        "                "
+      ],
+      sleepy: [
+        "                ",
+        "                ",
+        "   0000    0000  ",
+        "                ",
+        "                ",
+        "                ",
+        "                ",
+        "                "
+      ],
+      dizzy: [
+        "                ",
+        "                ",
+        "   0000    0000  ",
+        "   0000    0000  ",
+        "   0000    0000  ",
+        "   0000    0000  ",
+        "                ",
+        "                "
+      ],
+      love: [
+        "                ",
+        "                ",
+        "   0000    0000  ",
+        "   0000    0000  ",
+        "                ",
+        "                ",
+        "                ",
+        "                "
+      ],
+      shocked: [
+        "                ",
+        "                ",
+        "   0000    0000  ",
+        "   0000    0000  ",
+        "   0000    0000  ",
+        "   0000    0000  ",
+        "                ",
+        "                "
+      ]
     };
 
-    // Draw eyes
-    function drawEyes() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let currentExpression = "regular";
+    let isCurious = false;
+    let eyeOffset = 0;
 
-      // Background
+    function drawPixelGrid(grid) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Calculate eye positions with offset for curiosity
-      leftX = 32 + eyeOffset;
-      rightX = 32 + spacing + eyeOffset;
+      const leftEyeX = 16 + eyeOffset;
+      const rightEyeX = 16 + eyeSpacing + eyeOffset;
 
-      // Draw selected expression
-      expressions[currentExpression]();
-
-      // Add outlines
-      ctx.strokeStyle = "#000";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(leftX, 24, eyeWidth, eyeHeight);
-      ctx.strokeRect(rightX, 24, eyeWidth, eyeHeight);
-    }
-
-    // Blink animation
-    function blink() {
-      if (isBlinking) return;
-      isBlinking = true;
-
-      let targetHeight = 0;
-      let currentHeight = eyeHeight;
-      const duration = 200; // ms
-      const startTime = performance.now();
-
-      function animateBlink(time) {
-        const elapsed = time - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        currentHeight = eyeHeight * (1 - progress);
-        eyeHeight = currentHeight;
-        drawEyes();
-
-        if (progress < 1) {
-          requestAnimationFrame(animateBlink);
-        } else {
-          isBlinking = false;
-          setTimeout(() => {
-            eyeHeight = 20; // Reset after blink
-            drawEyes();
-          }, 200); // Small pause before eyes open
+      // Draw left eye
+      for (let y = 0; y < grid.length; y++) {
+        for (let x = 0; x < grid[y].length; x++) {
+          if (grid[y][x] === "0") {
+            ctx.fillStyle = "#00ff00";
+            ctx.fillRect(leftEyeX + x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+          }
         }
       }
 
-      requestAnimationFrame(animateBlink);
-    }
-
-    // Schedule random blinks
-    function scheduleBlink() {
-      const delay = Math.random() * 5000 + 5000; // 5-10s
-      blinkTimer = setTimeout(() => {
-        blink();
-        scheduleBlink();
-      }, delay);
-    }
-
-    // Curiosity animation (eyes move left-right)
-    function updateCuriosity() {
-      if (!isCurious) return;
-      eyeOffset = Math.sin(performance.now() * 0.002) * 10; // Oscillate between -10 and +10
-      drawEyes();
-    }
-
-    // Fullscreen toggle
-    function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        canvas.requestFullscreen().catch(err => {
-          alert("Fullscreen failed: " + err.message);
-        });
-      } else {
-        document.exitFullscreen();
+      // Draw right eye
+      for (let y = 0; y < grid.length; y++) {
+        for (let x = 0; x < grid[y].length; x++) {
+          if (grid[y][x] === "0") {
+            ctx.fillStyle = "#00ff00";
+            ctx.fillRect(rightEyeX + x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+          }
+        }
       }
     }
 
-    // Adjust canvas size for fullscreen
-    function resizeCanvas() {
-      const scale = 1; // Pixel-perfect scaling
-      canvas.width = 128;
-      canvas.height = 64;
-      canvas.style.width = "128px";
-      canvas.style.height = "64px";
+    function updateCuriosity() {
+      if (!isCurious) return;
+      eyeOffset = Math.sin(performance.now() * 0.002) * 10;
+      drawPixelGrid(expressions[currentExpression]);
     }
 
-    // Event listeners
     document.getElementById("expressionSelect").addEventListener("change", (e) => {
       currentExpression = e.target.value;
-      drawEyes();
+      drawPixelGrid(expressions[currentExpression]);
     });
 
     document.getElementById("toggleCuriosity").addEventListener("click", () => {
       isCurious = !isCurious;
       eyeOffset = 0;
-      drawEyes();
+      drawPixelGrid(expressions[currentExpression]);
     });
 
-    document.getElementById("toggleFullscreen").addEventListener("click", toggleFullscreen);
-
-    // Initial setup
-    drawEyes();
-    scheduleBlink();
     setInterval(updateCuriosity, 16); // ~60fps
 
-    // Resize canvas when exiting fullscreen
-    document.addEventListener("fullscreenchange", () => {
-      if (!document.fullscreenElement) {
-        resizeCanvas();
-      }
-    });
+    drawPixelGrid(expressions[currentExpression]);
   </script>
 </body>
 </html>
