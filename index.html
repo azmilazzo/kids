@@ -3,153 +3,244 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Robot Eyes Expression Simulator</title>
+  <title>Robot Eyes OLED Canvas Simulator</title>
   <style>
     body {
-      background-color: black;
-      color: #00ffcc;
-      font-family: monospace;
-      text-align: center;
+      font-family: 'Arial', sans-serif;
+      background-color: #1a1a1a;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
       margin: 0;
-      padding: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 800px;
     }
 
     canvas {
       background-color: #000;
-      border: 3px solid #00ffcc;
-      display: block;
-      margin: 1em auto;
-      image-rendering: pixelated;
+      border: 4px solid #2ecc71;
+      border-radius: 10px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
     }
 
-    button {
-      margin: 0.5em;
-      padding: 0.5em 1em;
-      background: #003f3f;
-      color: #00ffcc;
-      border: 2px solid #00ffcc;
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      width: 100%;
+      max-width: 600px;
+      margin-top: 20px;
+    }
+
+    .expression-btn {
+      padding: 10px;
+      background-color: #333;
+      color: white;
+      border: 2px solid #2ecc71;
+      border-radius: 5px;
       cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+      text-align: center;
     }
 
-    button:hover {
-      background: #005f5f;
+    .expression-btn:hover {
+      background-color: #444;
+      transform: translateY(-2px);
+    }
+
+    .expression-btn.active {
+      background-color: #2ecc71;
+      color: #222;
+    }
+
+    .credits {
+      margin-top: 20px;
+      font-size: 12px;
+      text-align: center;
+      color: #777;
     }
   </style>
 </head>
 <body>
-  <h1>Robot Eyes OLED Simulator</h1>
-  <canvas id="oled" width="240" height="80"></canvas>
-  <div>
-    <button onclick="setExpression('neutral')">Neutral</button>
-    <button onclick="setExpression('happy')">Happy</button>
-    <button onclick="setExpression('angry')">Angry</button>
-    <button onclick="setExpression('sad')">Sad</button>
-    <button onclick="setExpression('tired')">Tired</button>
-    <button onclick="setExpression('skeptical')">Skeptical</button>
+  <h1>Robot Eyes OLED Canvas Simulator</h1>
+
+  <div class="container">
+    <canvas id="oledCanvas" width="300" height="150"></canvas>
+
+    <div class="controls" id="controls">
+      <!-- Buttons added by JS -->
+    </div>
+  </div>
+
+  <div class="credits">
+    Inspired by the RoboEyes project and OLED panel designs
   </div>
 
   <script>
-    const canvas = document.getElementById('oled');
+    const canvas = document.getElementById('oledCanvas');
     const ctx = canvas.getContext('2d');
-    ctx.font = "32px monospace";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    const controls = document.getElementById('controls');
 
-    let currentExpression = 'neutral';
-    let blinkTimer = 0;
-    let blinkInterval = randomInterval();
-    let teardropY = 40;
-    let teardropDirection = 1;
-    let tiredZ = '';
-    let zTimer = 0;
-    let skepticalOffset = 0;
+    const expressions = {
+      NEUTRAL: drawNeutral,
+      TIRED: drawTired,
+      SKEPTICAL: drawSkeptical,
+      HAPPY: drawHappy,
+      ANGRY: drawAngry,
+      SAD: drawSad,
+      LOVE: drawLove,
+      DIZZY: drawDizzy,
+      EXPRESSIONLESS: drawLine
+    };
 
-    function randomInterval() {
-      return 2000 + Math.random() * 3000;
+    // Draw helper functions
+    function clearCanvas() {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    function setExpression(expression) {
-      currentExpression = expression;
-      blinkTimer = 0;
-      teardropY = 40;
-      tiredZ = '';
-      zTimer = 0;
-      skepticalOffset = 0;
-    }
+    function drawEye(x, y, shape) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = '#2ecc71';
 
-    function drawBlinkingEyes(base) {
-      if (blinkTimer < 200) {
-        ctx.fillText('-', canvas.width / 2, canvas.height / 2);
-      } else {
-        ctx.fillText(base, canvas.width / 2, canvas.height / 2);
-      }
-    }
-
-    function drawSadEyes() {
-      ctx.fillText('T_T', canvas.width / 2, canvas.height / 2);
-      // Teardrop animation
-      ctx.fillStyle = '#00ffff';
-      ctx.beginPath();
-      ctx.arc(canvas.width / 2 - 30, teardropY, 3, 0, 2 * Math.PI);
-      ctx.arc(canvas.width / 2 + 30, teardropY, 3, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.fillStyle = '#00ffcc';
-      teardropY += 0.5 * teardropDirection;
-      if (teardropY > 60 || teardropY < 40) teardropDirection *= -1;
-    }
-
-    function drawTiredEyes() {
-      ctx.fillText('-_-', canvas.width / 2, canvas.height / 2);
-      // Zzz animation
-      zTimer++;
-      if (zTimer % 60 === 0) tiredZ += 'Z';
-      if (tiredZ.length > 3) tiredZ = '';
-      ctx.font = "16px monospace";
-      ctx.fillText(tiredZ, canvas.width - 30, 20);
-      ctx.font = "32px monospace";
-    }
-
-    function drawSkepticalEyes() {
-      // O_o bounce
-      skepticalOffset += 0.1;
-      let offset = Math.sin(skepticalOffset) * 2;
-      ctx.fillText('O_o', canvas.width / 2 + offset, canvas.height / 2);
-    }
-
-    function render() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      switch (currentExpression) {
-        case 'neutral':
-          drawBlinkingEyes('o_o');
+      switch (shape) {
+        case 'rect':
+          ctx.fillRect(-15, -15, 30, 30);
           break;
-        case 'happy':
-          drawBlinkingEyes('^^');
+        case 'sleepy':
+          ctx.fillRect(-15, -4, 30, 8);
+          break;
+        case 'narrow':
+          ctx.fillRect(-15, -8, 30, 16);
           break;
         case 'angry':
-          drawBlinkingEyes('ꐦ¬_¬');
+          ctx.rotate(-0.5);
+          ctx.fillRect(-15, -5, 30, 10);
           break;
         case 'sad':
-          drawSadEyes();
+          ctx.beginPath();
+          ctx.arc(0, 10, 15, Math.PI, 0);
+          ctx.fill();
           break;
-        case 'tired':
-          drawTiredEyes();
+        case 'smile':
+          ctx.beginPath();
+          ctx.arc(0, 10, 15, 0, Math.PI);
+          ctx.fill();
           break;
-        case 'skeptical':
-          drawSkepticalEyes();
+        case 'line':
+          ctx.fillRect(-15, -2, 30, 4);
+          break;
+        case 'heart':
+          ctx.beginPath();
+          ctx.moveTo(0, -5);
+          ctx.bezierCurveTo(-10, -15, -20, 5, 0, 15);
+          ctx.bezierCurveTo(20, 5, 10, -15, 0, -5);
+          ctx.fill();
+          break;
+        case 'spiral':
+          ctx.strokeStyle = '#2ecc71';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          for (let i = 0; i < 10; i++) {
+            let radius = 1.5 * i;
+            let angle = i * 0.5 * Math.PI;
+            let x = radius * Math.cos(angle);
+            let y = radius * Math.sin(angle);
+            ctx.lineTo(x, y);
+          }
+          ctx.stroke();
           break;
       }
 
-      blinkTimer += 16;
-      if (blinkTimer > blinkInterval) {
-        blinkTimer = 0;
-        blinkInterval = randomInterval();
-      }
-
-      requestAnimationFrame(render);
+      ctx.restore();
     }
 
-    render();
+    // Expression draw functions
+    function drawNeutral() {
+      clearCanvas();
+      drawEye(90, 75, 'rect');
+      drawEye(210, 75, 'rect');
+    }
+
+    function drawTired() {
+      clearCanvas();
+      drawEye(90, 75, 'sleepy');
+      drawEye(210, 75, 'sleepy');
+    }
+
+    function drawSkeptical() {
+      clearCanvas();
+      drawEye(90, 75, 'narrow');
+      drawEye(210, 75, 'narrow');
+    }
+
+    function drawHappy() {
+      clearCanvas();
+      drawEye(90, 75, 'smile');
+      drawEye(210, 75, 'smile');
+    }
+
+    function drawAngry() {
+      clearCanvas();
+      drawEye(90, 75, 'angry');
+      drawEye(210, 75, 'angry');
+    }
+
+    function drawSad() {
+      clearCanvas();
+      drawEye(90, 75, 'rect');
+      drawEye(210, 75, 'sad');
+    }
+
+    function drawLove() {
+      clearCanvas();
+      drawEye(90, 75, 'heart');
+      drawEye(210, 75, 'heart');
+    }
+
+    function drawDizzy() {
+      clearCanvas();
+      drawEye(90, 75, 'spiral');
+      drawEye(210, 75, 'spiral');
+    }
+
+    function drawLine() {
+      clearCanvas();
+      drawEye(90, 75, 'line');
+      drawEye(210, 75, 'line');
+    }
+
+    // Add buttons
+    Object.keys(expressions).forEach(key => {
+      const btn = document.createElement('button');
+      btn.className = 'expression-btn';
+      btn.innerText = key;
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.expression-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        expressions[key]();
+      });
+      controls.appendChild(btn);
+    });
+
+    // Initial draw
+    expressions.NEUTRAL();
   </script>
 </body>
 </html>
