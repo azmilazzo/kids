@@ -84,13 +84,27 @@
     const expressions = {
       happy: () => {
         ctx.fillStyle = "#00ff00";
+        ctx.beginPath();
         ctx.roundRect(leftX, 24, eyeWidth, eyeHeight, 5);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
         ctx.roundRect(rightX, 24, eyeWidth, eyeHeight, 5);
+        ctx.fill();
+        ctx.stroke();
       },
       neutral: () => {
         ctx.fillStyle = "#ffff00";
+        ctx.beginPath();
         ctx.roundRect(leftX, 24, eyeWidth, eyeHeight, 5);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
         ctx.roundRect(rightX, 24, eyeWidth, eyeHeight, 5);
+        ctx.fill();
+        ctx.stroke();
       },
       angry: () => {
         ctx.fillStyle = "#ff0000";
@@ -98,12 +112,14 @@
         ctx.moveTo(leftX + 5, 24);
         ctx.lineTo(leftX + 25, 18);
         ctx.lineTo(leftX + 25, 24);
+        ctx.closePath();
         ctx.fill();
 
         ctx.beginPath();
         ctx.moveTo(rightX + 5, 24);
         ctx.lineTo(rightX + 25, 18);
         ctx.lineTo(rightX + 25, 24);
+        ctx.closePath();
         ctx.fill();
       },
       sad: () => {
@@ -169,7 +185,6 @@
         ctx.closePath();
         ctx.fill();
 
-        ctx.fillStyle = "#ff00ff";
         ctx.font = "10px Arial";
         ctx.fillText("❤️", leftX + 12, 35);
         ctx.fillText("❤️", rightX + 12, 35);
