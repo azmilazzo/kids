@@ -3,341 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exact Expression Simulator</title>
+    <title>CSS Robo Eyes Emotions</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #0a0a0a;
-            color: #2ecc71;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-
-        h1 {
-            margin-bottom: 30px;
-            text-align: center;
-            text-shadow: 0 0 8px rgba(46, 204, 113, 0.3);
-        }
-
         .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 800px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            font-family: Arial, sans-serif;
         }
 
-        .robot-face {
-            width: 300px;
-            height: 300px;
-            background-color: #111;
-            border-radius: 10%;
-            position: relative;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 0 30px rgba(46, 204, 113, 0.1);
+        .emotion-card {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            background-color: #f9f9f9;
         }
 
         .eyes-container {
             display: flex;
-            justify-content: space-between;
-            width: 220px;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
         }
 
         .eye {
-            width: 100px;
-            height: 100px;
-            background-color: #000;
-            border: 2px solid #1a1a1a;
-            border-radius: 15px;
+            width: 60px;
+            height: 60px;
+            background: #fff;
+            border-radius: 50%;
             position: relative;
-            overflow: hidden;
+            border: 2px solid #333;
         }
 
         .pupil {
+            width: 25px;
+            height: 25px;
+            background: #222;
+            border-radius: 50%;
             position: absolute;
-            background-color: #2ecc71;
-            transition: all 0.2s cubic-bezier(0.17, 0.67, 0.44, 1.26);
-            box-shadow: 0 0 8px rgba(46, 204, 113, 0.3);
+            transition: all 0.3s;
         }
 
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            width: 100%;
-            max-width: 600px;
+        /* Emotion-specific styles */
+        .skeptical .pupil { transform: translate(15px, 15px); }
+        .suspicious .pupil { transform: translate(-15px, 15px); }
+        .happiness .pupil { width: 35px; height: 35px; }
+        .fear .pupil { transform: translateY(20px); }
+        .surprise { background: radial-gradient(circle, #fff 60%, #ff0000 100%); }
+        .horrified .eye { overflow: hidden; }
+        .horrified .pupil { transform: scale(0.8) translateY(-15px); }
+        .anger .eye { background: #ff4444; }
+        .confused .pupil { transform: rotate(45deg); }
+        .bored .pupil { opacity: 0.5; }
+        .pleading .eye::after {
+            content: "🥺";
+            position: absolute;
+            font-size: 24px;
+            transform: translate(-50%, -50%);
         }
 
-        .control-btn {
-            padding: 12px;
-            background-color: #111;
-            color: #2ecc71;
-            border: 1px solid #2ecc71;
+        .emotion-title {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .emotion-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .emotion-list li {
+            margin: 5px 0;
+            padding: 4px;
+            background-color: #e3e3e3;
             border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 14px;
-            text-transform: uppercase;
-        }
-
-        .control-btn:hover {
-            background-color: #1a1a1a;
-            transform: translateY(-2px);
-        }
-
-        .credits {
-            margin-top: 30px;
-            font-size: 12px;
-            color: #555;
-            text-align: center;
         }
     </style>
 </head>
 <body>
-    <h1>EXACT EXPRESSION MATRIX</h1>
-    
     <div class="container">
-        <div class="robot-face">
+        <!-- Disgust/Skeptical/Suspicious -->
+        <div class="emotion-card">
             <div class="eyes-container">
-                <div class="eye left-eye">
-                    <div class="pupil left-pupil"></div>
+                <div class="eye skeptical">
+                    <div class="pupil"></div>
                 </div>
-                <div class="eye right-eye">
-                    <div class="pupil right-pupil"></div>
+                <div class="eye suspicious">
+                    <div class="pupil"></div>
                 </div>
             </div>
+            <div class="emotion-title">1000239201.jpg</div>
+            <ul class="emotion-list">
+                <li>SKEPTICAL</li>
+                <li>SUSPICIOUS</li>
+            </ul>
         </div>
 
-        <div class="controls">
-            <!-- Six Basic Expressions -->
-            <button class="control-btn" data-expression="SADNESS">Sadness</button>
-            <button class="control-btn" data-expression="SURPRISE">Surprise</button>
-            <button class="control-btn" data-expression="ANGER">Anger</button>
-            <button class="control-btn" data-expression="DISGUST">Disgust</button>
-            <button class="control-btn" data-expression="HAPPINESS">Happiness</button>
-            <button class="control-btn" data-expression="FEAR">Fear</button>
+        <!-- Happiness/Fear -->
+        <div class="emotion-card">
+            <div class="eyes-container">
+                <div class="eye happiness">
+                    <div class="pupil"></div>
+                </div>
+                <div class="eye fear">
+                    <div class="pupil"></div>
+                </div>
+            </div>
+            <div class="emotion-title">1000239203.jpg</div>
+            <ul class="emotion-list">
+                <li>HAPPINESS</li>
+                <li>FEAR</li>
+            </ul>
+        </div>
 
-            <!-- Sub-faces of Sadness -->
-            <button class="control-btn" data-expression="HORRIFIED">Horrified</button>
-            <button class="control-btn" data-expression="VULNERABLE">Vulnerable</button>
-            <button class="control-btn" data-expression="DESPAIR">Despair</button>
+        <!-- Sadness/Surprise -->
+        <div class="emotion-card">
+            <div class="eyes-container">
+                <div class="eye sadness">
+                    <div class="pupil"></div>
+                </div>
+                <div class="eye surprise">
+                    <div class="pupil"></div>
+                </div>
+            </div>
+            <div class="emotion-title">1000239198.jpg</div>
+            <ul class="emotion-list">
+                <li>SADNESS</li>
+                <li>SURPRISE</li>
+            </ul>
+        </div>
 
-            <!-- Sub-faces of Disgust/Anger -->
-            <button class="control-btn" data-expression="SKEPTICAL">Skeptical</button>
-            <button class="control-btn" data-expression="SUSPICIOUS">Suspicious</button>
-            <button class="control-btn" data-expression="FURIOUS">Furious</button>
+        <!-- Horrified/Furious -->
+        <div class="emotion-card">
+            <div class="eyes-container">
+                <div class="eye horrified">
+                    <div class="pupil"></div>
+                </div>
+                <div class="eye furious">
+                    <div class="pupil"></div>
+                </div>
+            </div>
+            <div class="emotion-title">1000239199.jpg</div>
+            <ul class="emotion-list">
+                <li>HORRIFIED</li>
+                <li>FURIOUS</li>
+            </ul>
+        </div>
 
-            <!-- Sub-faces of Anger -->
-            <button class="control-btn" data-expression="ANNOYED">Annoyed</button>
-            <button class="control-btn" data-expression="REJECTED">Rejected</button>
+        <!-- Confused/Bored -->
+        <div class="emotion-card">
+            <div class="eyes-container">
+                <div class="eye confused">
+                    <div class="pupil"></div>
+                </div>
+                <div class="eye bored">
+                    <div class="pupil"></div>
+                </div>
+            </div>
+            <div class="emotion-title">1000239205.jpg</div>
+            <ul class="emotion-list">
+                <li>CONFUSED</li>
+                <li>BORED</li>
+            </ul>
+        </div>
 
-            <!-- Sub-faces of Surprise -->
-            <button class="control-btn" data-expression="PLEADING">Pleading</button>
-            <button class="control-btn" data-expression="GUILTY">Guilty</button>
-
-            <!-- Additional Expressions -->
-            <button class="control-btn" data-expression="CONFUSED">Confused</button>
-            <button class="control-btn" data-expression="BORED">Bored</button>
-            <button class="control-btn" data-expression="ASLEEP">Asleep</button>
+        <!-- Anger/Disgust -->
+        <div class="emotion-card">
+            <div class="eyes-container">
+                <div class="eye anger">
+                    <div class="pupil"></div>
+                </div>
+                <div class="eye disgust">
+                    <div class="pupil"></div>
+                </div>
+            </div>
+            <div class="emotion-title">1000239200.jpg</div>
+            <ul class="emotion-list">
+                <li>ANGER</li>
+                <li>DISGUST</li>
+            </ul>
         </div>
     </div>
-
-    <script>
-        const expressions = {
-            // Six Basic Expressions
-            SADNESS: { left: 'sad', right: 'sad', animate: 'teardrop' },
-            SURPRISE: { left: 'wide', right: 'wide', animate: 'blink' },
-            ANGER: { left: 'angry', right: 'angry', animate: 'shake' },
-            DISGUST: { left: 'narrow', right: 'narrow', animate: 'twitch' },
-            HAPPINESS: { left: 'smile', right: 'smile', animate: 'bounce' },
-            FEAR: { left: 'spiral', right: 'spiral', animate: 'spin' },
-
-            // Sub-faces
-            HORRIFIED: { left: 'wide', right: 'spiral', animate: 'tremble' },
-            VULNERABLE: { left: 'half', right: 'tear', animate: 'slow-blink' },
-            DESPAIR: { left: 'closed', right: 'closed', animate: 'none' },
-            SKEPTICAL: { left: 'narrow', right: 'raised', animate: 'slow-blink' },
-            SUSPICIOUS: { left: 'side', right: 'narrow', animate: 'glance' },
-            FURIOUS: { left: 'flame', right: 'flame', animate: 'vibrate' },
-            ANNOYED: { left: 'slit', right: 'slit', animate: 'pulse' },
-            REJECTED: { left: 'down', right: 'down', animate: 'fade' },
-            PLEADING: { left: 'wide', right: 'tear', animate: 'droplet' },
-            GUILTY: { left: 'down', right: 'averted', animate: 'shimmer' },
-            CONFUSED: { left: 'swirl', right: 'swirl', animate: 'wobble' },
-            BORED: { left: 'half', right: 'half', animate: 'slow-blink' },
-            ASLEEP: { left: 'line', right: 'line', animate: 'none' }
-        };
-
-        const leftPupil = document.querySelector('.left-pupil');
-        const rightPupil = document.querySelector('.right-pupil');
-        let currentAnimation = null;
-
-        function setExpression(expression) {
-            if(currentAnimation) cancelAnimationFrame(currentAnimation);
-            
-            // Reset pupils
-            leftPupil.style.transform = '';
-            rightPupil.style.transform = '';
-            leftPupil.innerHTML = '';
-            rightPupil.innerHTML = '';
-
-            // Set base shapes
-            setEyeShape(leftPupil, expressions[expression].left);
-            setEyeShape(rightPupil, expressions[expression].right);
-
-            // Start animation
-            if(expressions[expression].animate !== 'none') {
-                startAnimation(expressions[expression].animate);
-            }
-        }
-
-        function setEyeShape(pupil, shape) {
-            pupil.style.cssText = '';
-            const baseSize = 'width: 40px; height: 40px; top: 30px; left: 30px;';
-
-            switch(shape) {
-                case 'sad':
-                    pupil.style.cssText = `
-                        width: 50px; height: 30px;
-                        top: 40px; left: 25px;
-                        border-radius: 0 0 25px 25px;
-                    `;
-                    break;
-
-                case 'wide':
-                    pupil.style.cssText = baseSize + 'border-radius: 50%';
-                    break;
-
-                case 'angry':
-                    pupil.style.cssText = `
-                        width: 40px; height: 15px;
-                        top: 45px; transform: rotate(15deg);
-                    `;
-                    break;
-
-                case 'narrow':
-                    pupil.style.cssText = `
-                        width: 40px; height: 10px;
-                        top: 45px;
-                    `;
-                    break;
-
-                case 'smile':
-                    pupil.style.cssText = `
-                        width: 50px; height: 25px;
-                        top: 55px; border-radius: 0 0 25px 25px;
-                    `;
-                    break;
-
-                case 'spiral':
-                    pupil.innerHTML = `
-                        <div style="${baseSize} background: conic-gradient(#2ecc71 20%, transparent 80%);
-                        border-radius: 50%"></div>
-                    `;
-                    break;
-
-                case 'flame':
-                    pupil.innerHTML = `
-                        <div style="${baseSize} background: 
-                        linear-gradient(45deg, #ff6600, #ff3300);
-                        border-radius: 15% 85% 30% 70% / 70% 30% 70% 30%;
-                        "></div>
-                    `;
-                    break;
-
-                case 'raised':
-                    pupil.style.cssText = `
-                        width: 40px; height: 40px;
-                        top: 25px; border-radius: 50%;
-                    `;
-                    break;
-
-                case 'side':
-                    pupil.style.transform = 'translateX(15px)';
-                    break;
-
-                case 'swirl':
-                    pupil.innerHTML = `
-                        <div style="${baseSize} background: 
-                        repeating-radial-gradient(circle, #2ecc71 0% 10%, transparent 10% 20%);
-                        "></div>
-                    `;
-                    break;
-
-                case 'line':
-                    pupil.style.cssText = `
-                        width: 40px; height: 3px;
-                        top: 48px; left: 30px;
-                    `;
-                    break;
-
-                default:
-                    pupil.style.cssText = baseSize + 'border-radius: 20%';
-            }
-        }
-
-        function startAnimation(type) {
-            let progress = 0;
-            
-            function animate() {
-                progress += 0.05;
-                
-                switch(type) {
-                    case 'teardrop':
-                        if(progress % 2 < 1) {
-                            rightPupil.innerHTML += `
-                                <div style="position:absolute; width:8px; height:15px;
-                                    background:#2ecc71; top:70px; left:46px;
-                                    border-radius:50%; opacity:${1 - (progress%1)}">
-                                </div>
-                            `;
-                        }
-                        break;
-
-                    case 'shake':
-                        leftPupil.style.transform = `translateX(${Math.sin(progress*10)*5}px)`;
-                        rightPupil.style.transform = `translateX(${Math.sin(progress*10)*5}px)`;
-                        break;
-
-                    case 'tremble':
-                        leftPupil.style.transform = `
-                            translate(${Math.random()*2-1}px, ${Math.random()*2-1}px)
-                        `;
-                        rightPupil.style.transform = `
-                            translate(${Math.random()*2-1}px, ${Math.random()*2-1}px)
-                        `;
-                        break;
-
-                    case 'vibrate':
-                        leftPupil.style.transform = `translateX(${Math.sin(progress*20)*8}px)`;
-                        rightPupil.style.transform = `translateX(${Math.sin(progress*20)*8}px)`;
-                        break;
-                }
-                
-                currentAnimation = requestAnimationFrame(animate);
-            }
-            
-            animate();
-        }
-
-        // Event listeners
-        document.querySelectorAll('.control-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.control-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                setExpression(btn.dataset.expression);
-            });
-        });
-
-        // Initialize
-        setExpression('HAPPINESS');
-    </script>
 </body>
 </html>
