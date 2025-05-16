@@ -1,169 +1,114 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Robotic Eyes with Expressions</title>
-    <style>
-        /* Container */
-        .robot-eyes {
-            position: relative;
-            width: 300px;
-            height: 200px;
-            margin: 50px auto;
-            background: #000;
-            overflow: hidden;
-        }
+<style>
+.eyes {
+  width: 128px;
+  height: 48px;
+  position: relative;
+  margin: 20px auto;
+}
 
-        /* Base eye styles */
-        .eye {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 80px;
-            height: 80px;
-            background: #00BFFF;
-            border-radius: 6px;
-            box-shadow: 0 0 10px #00BFFF, 0 0 20px #00BFFF;
-        }
+.eye {
+  width: 55px;
+  height: 35px;
+  background: #000;
+  border-radius: 9px;
+  position: absolute;
+  transition: all 0.2s ease;
+}
 
-        /* Positioning */
-        .eye.left { left: 40px; }
-        .eye.right { right: 40px; }
+.left-eye { left: 8px; }
+.right-eye { right: 8px; }
 
-        /* Expression controls */
-        .expression-controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
-        }
+/* Closed eyes */
+.eyes.closed .eye {
+  height: 18px;
+  top: 19px;
+}
 
-        /* Hidden radio buttons */
-        input[type="radio"] {
-            display: none;
-        }
+.eyes.closed .eye::after {
+  content: '';
+  position: absolute;
+  top: -18px;
+  left: 0;
+  width: 100%;
+  height: 18px;
+  background: #000;
+}
 
-        /* Expression buttons */
-        label.expression-btn {
-            padding: 10px 20px;
-            border: 2px solid #fff;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
+/* Angry expression */
+.eyes.angry .eye::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -8px;
+  border-left: 32px solid transparent;
+  border-right: 32px solid transparent;
+  border-bottom: 15px solid #000;
+}
 
-        label:hover {
-            background: rgba(255,255,255,0.1);
-        }
+/* Sad expression */
+.eyes.sad .eye::after {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  left: -8px;
+  border-left: 32px solid transparent;
+  border-right: 32px solid transparent;
+  border-top: 15px solid #000;
+}
 
-        /* Active button styling */
-        input:checked + label {
-            background: #00BFFF;
-            color: #000;
-        }
+/* Happy eyes */
+.eyes.happy .eye {
+  border-radius: 11px;
+}
 
-        /* Neutral expression (default) */
-        #neutral:checked ~ .robot-eyes .eye {
-            animation: 
-                neutral-blink 3s infinite,
-                neutral-pulse 2s infinite,
-                neutral-shift 5s infinite;
-        }
+.eyes.happy .eye::after {
+  content: '';
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  background: #fff;
+  border-radius: 50%;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+}
 
-        @keyframes neutral-blink {
-            0%, 90% { opacity: 1; }
-            95%, 100% { opacity: 0; }
-        }
+/* Blink animation */
+@keyframes blink {
+  0%, 100% { height: 35px; top: 12px; }
+  50% { height: 18px; top: 19px; }
+}
 
-        @keyframes neutral-pulse {
-            0% { box-shadow: 0 0 10px #00BFFF, 0 0 20px #00BFFF; }
-            50% { box-shadow: 0 0 20px #00BFFF, 0 0 40px #00BFFF; }
-            100% { box-shadow: 0 0 10px #00BFFF, 0 0 20px #00BFFF; }
-        }
-
-        @keyframes neutral-shift {
-            0%, 100% { border-radius: 6px; }
-            25% { border-radius: 50%; }
-            50% { border-radius: 0 20px 0 20px / 0 10px 0 10px; }
-            75% { border-radius: 20px 0 20px 0 / 10px 0 10px 0; }
-        }
-
-        /* Happy expression */
-        #happy:checked ~ .robot-eyes .eye {
-            animation: 
-                happy-blink 2s infinite,
-                happy-pulse 1.5s infinite,
-                happy-shift 4s infinite;
-        }
-
-        @keyframes happy-blink {
-            0%, 90% { opacity: 1; }
-            95%, 100% { opacity: 0; }
-        }
-
-        @keyframes happy-pulse {
-            0% { box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00; }
-            50% { box-shadow: 0 0 20px #00FF00, 0 0 40px #00FF00; }
-            100% { box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00; }
-        }
-
-        @keyframes happy-shift {
-            0%, 100% { border-radius: 6px; }
-            25% { border-radius: 50%; }
-            50% { border-radius: 0 20px 0 20px / 0 10px 0 10px; }
-            75% { border-radius: 20px 0 20px 0 / 10px 0 10px 0; }
-        }
-
-        /* Angry expression */
-        #angry:checked ~ .robot-eyes .eye {
-            animation: 
-                angry-blink 1.5s infinite,
-                angry-pulse 1s infinite,
-                angry-shift 3s infinite;
-        }
-
-        @keyframes angry-blink {
-            0%, 80% { opacity: 1; }
-            85%, 100% { opacity: 0; }
-        }
-
-        @keyframes angry-pulse {
-            0% { box-shadow: 0 0 5px #FF0000, 0 0 10px #FF0000; }
-            50% { box-shadow: 0 0 10px #FF0000, 0 0 20px #FF0000; }
-            100% { box-shadow: 0 0 5px #FF0000, 0 0 10px #FF0000; }
-        }
-
-        @keyframes angry-shift {
-            0%, 100% { border-radius: 6px; }
-            25% { border-radius: 0 0 20px 20px; }
-            50% { border-radius: 20px 20px 0 0; }
-            75% { border-radius: 0 20px 0 20px; }
-        }
-
-        /* Responsive scaling */
-        @media (max-width: 600px) {
-            .robot-eyes { transform: scale(0.8); }
-        }
-    </style>
+.blink {
+  animation: blink 0.3s ease;
+}
+</style>
 </head>
 <body>
-    <!-- Expression toggles -->
-    <div class="expression-controls">
-        <input type="radio" id="neutral" name="expression" checked>
-        <label class="expression-btn" for="neutral">Neutral</label>
+<div class="eyes">
+  <div class="eye left-eye"></div>
+  <div class="eye right-eye"></div>
+</div>
 
-        <input type="radio" id="happy" name="expression">
-        <label class="expression-btn" for="happy">Happy</label>
+<button onclick="setExpression('normal')">Normal</button>
+<button onclick="setExpression('blink')">Blink</button>
+<button onclick="setExpression('angry')">Angry</button>
+<button onclick="setExpression('sad')">Sad</button>
+<button onclick="setExpression('happy')">Happy</button>
 
-        <input type="radio" id="angry" name="expression">
-        <label class="expression-btn" for="angry">Angry</label>
-    </div>
-
-    <!-- Eyes container -->
-    <div class="robot-eyes">
-        <div class="eye left"></div>
-        <div class="eye right"></div>
-    </div>
+<script>
+function setExpression(expr) {
+  const eyes = document.querySelector('.eyes');
+  eyes.className = `eyes ${expr}`;
+  
+  // Reset after animations
+  if(expr === 'blink') {
+    setTimeout(() => eyes.className = 'eyes', 300);
+  }
+}
+</script>
 </body>
 </html>
