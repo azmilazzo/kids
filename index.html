@@ -2,81 +2,75 @@
 <html>
 <head>
 <style>
-.eyes {
-  width: 128px;
-  height: 48px;
+body {
+  background: #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px;
+}
+
+.eyes-container {
   position: relative;
-  margin: 20px auto;
+  width: 128px;
+  height: 64px;
 }
 
 .eye {
+  position: absolute;
   width: 55px;
   height: 35px;
-  background: #000;
+  background: #fff;
+  border: 2px solid #000;
   border-radius: 9px;
-  position: absolute;
-  transition: all 0.2s ease;
+  overflow: hidden;
 }
 
 .left-eye { left: 8px; }
 .right-eye { right: 8px; }
 
-/* Closed eyes */
-.eyes.closed .eye {
-  height: 18px;
-  top: 19px;
+/* Closed state */
+.closed .eye {
+  height: 18px !important;
+  top: 19px !important;
 }
 
-.eyes.closed .eye::after {
+.closed .eye::after {
   content: '';
   position: absolute;
   top: -18px;
-  left: 0;
-  width: 100%;
+  left: -2px;
+  width: calc(100% + 4px);
   height: 18px;
-  background: #000;
+  background: #fff;
+  border: 2px solid #000;
+}
+
+/* Normal state */
+.normal .eye {
+  top: 12px;
+  height: 35px;
 }
 
 /* Angry expression */
-.eyes.angry .eye::before {
+.angry .eye::before {
   content: '';
   position: absolute;
   top: -6px;
-  left: -8px;
-  border-left: 32px solid transparent;
-  border-right: 32px solid transparent;
+  left: -10px;
+  width: calc(100% + 20px);
   border-bottom: 15px solid #000;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
 }
 
-/* Sad expression */
-.eyes.sad .eye::after {
-  content: '';
-  position: absolute;
-  bottom: -15px;
-  left: -8px;
-  border-left: 32px solid transparent;
-  border-right: 32px solid transparent;
-  border-top: 15px solid #000;
+/* Happy expression */
+.happy .eye {
+  border-radius: 11px 11px 20px 20px;
 }
 
-/* Happy eyes */
-.eyes.happy .eye {
-  border-radius: 11px;
-}
-
-.eyes.happy .eye::after {
-  content: '';
-  position: absolute;
-  width: 38px;
-  height: 38px;
-  background: #fff;
-  border-radius: 50%;
-  bottom: -24px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* Blink animation */
+/* Animation */
 @keyframes blink {
   0%, 100% { height: 35px; top: 12px; }
   50% { height: 18px; top: 19px; }
@@ -88,25 +82,26 @@
 </style>
 </head>
 <body>
-<div class="eyes">
+<div class="eyes-container normal">
   <div class="eye left-eye"></div>
   <div class="eye right-eye"></div>
 </div>
 
-<button onclick="setExpression('normal')">Normal</button>
-<button onclick="setExpression('blink')">Blink</button>
-<button onclick="setExpression('angry')">Angry</button>
-<button onclick="setExpression('sad')">Sad</button>
-<button onclick="setExpression('happy')">Happy</button>
+<div class="controls">
+  <button onclick="setExpression('normal')">Normal</button>
+  <button onclick="setExpression('blink')">Blink</button>
+  <button onclick="setExpression('angry')">Angry</button>
+  <button onclick="setExpression('happy')">Happy</button>
+  <button onclick="setExpression('closed')">Closed</button>
+</div>
 
 <script>
 function setExpression(expr) {
-  const eyes = document.querySelector('.eyes');
-  eyes.className = `eyes ${expr}`;
+  const container = document.querySelector('.eyes-container');
+  container.className = `eyes-container ${expr}`;
   
-  // Reset after animations
   if(expr === 'blink') {
-    setTimeout(() => eyes.className = 'eyes', 300);
+    setTimeout(() => container.className = 'eyes-container normal', 300);
   }
 }
 </script>
