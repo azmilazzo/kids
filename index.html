@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Robotic Eyes Animation</title>
+    <title>Robotic Eyes with Expressions</title>
     <style>
-        /* Container for the eyes */
+        /* Container */
         .robot-eyes {
             position: relative;
             width: 300px;
@@ -25,52 +25,132 @@
             background: #00BFFF;
             border-radius: 6px;
             box-shadow: 0 0 10px #00BFFF, 0 0 20px #00BFFF;
+        }
+
+        /* Positioning */
+        .eye.left { left: 40px; }
+        .eye.right { right: 40px; }
+
+        /* Default animations */
+        .eye {
             animation: 
                 blink 3s infinite,
                 pulse 2s infinite,
                 shift 5s infinite;
         }
 
-        /* Left eye positioning */
-        .eye.left {
-            left: 40px;
+        /* Expression controls */
+        .expression-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
         }
 
-        /* Right eye positioning */
-        .eye.right {
-            right: 40px;
+        /* Hidden radio buttons */
+        input[type="radio"] {
+            display: none;
         }
 
-        /* Blinking animation */
-        @keyframes blink {
+        /* Expression buttons */
+        label.expression-btn {
+            padding: 10px 20px;
+            border: 2px solid #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        label:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Active button styling */
+        input:checked + label {
+            background: #00BFFF;
+            color: #000;
+        }
+
+        /* Neutral expression (default) */
+        #neutral:checked ~ .robot-eyes .eye {
+            animation: 
+                blink 3s infinite,
+                pulse 2s infinite,
+                shift 5s infinite;
+        }
+
+        /* Happy expression */
+        #happy:checked ~ .robot-eyes .eye {
+            animation: 
+                happy-blink 2s infinite,
+                happy-pulse 1.5s infinite,
+                happy-shift 4s infinite;
+        }
+
+        @keyframes happy-blink {
             0%, 90% { opacity: 1; }
             95%, 100% { opacity: 0; }
         }
 
-        /* Brightness pulsing */
-        @keyframes pulse {
-            0% { box-shadow: 0 0 10px #00BFFF, 0 0 20px #00BFFF; }
-            50% { box-shadow: 0 0 20px #00BFFF, 0 0 40px #00BFFF; }
-            100% { box-shadow: 0 0 10px #00BFFF, 0 0 20px #00BFFF; }
+        @keyframes happy-pulse {
+            0% { box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00; }
+            50% { box-shadow: 0 0 20px #00FF00, 0 0 40px #00FF00; }
+            100% { box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00; }
         }
 
-        /* Shape shifting */
-        @keyframes shift {
+        @keyframes happy-shift {
             0%, 100% { border-radius: 6px; }
             25% { border-radius: 50%; }
             50% { border-radius: 0 20px 0 20px / 0 10px 0 10px; }
             75% { border-radius: 20px 0 20px 0 / 10px 0 10px 0; }
         }
 
+        /* Angry expression */
+        #angry:checked ~ .robot-eyes .eye {
+            animation: 
+                angry-blink 1.5s infinite,
+                angry-pulse 1s infinite,
+                angry-shift 3s infinite;
+        }
+
+        @keyframes angry-blink {
+            0%, 80% { opacity: 1; }
+            85%, 100% { opacity: 0; }
+        }
+
+        @keyframes angry-pulse {
+            0% { box-shadow: 0 0 5px #FF0000, 0 0 10px #FF0000; }
+            50% { box-shadow: 0 0 10px #FF0000, 0 0 20px #FF0000; }
+            100% { box-shadow: 0 0 5px #FF0000, 0 0 10px #FF0000; }
+        }
+
+        @keyframes angry-shift {
+            0%, 100% { border-radius: 6px; }
+            25% { border-radius: 0 0 20px 20px; }
+            50% { border-radius: 20px 20px 0 0; }
+            75% { border-radius: 0 20px 0 20px; }
+        }
+
         /* Responsive scaling */
         @media (max-width: 600px) {
-            .robot-eyes {
-                transform: scale(0.8);
-            }
+            .robot-eyes { transform: scale(0.8); }
         }
     </style>
 </head>
 <body>
+    <!-- Expression toggles -->
+    <div class="expression-controls">
+        <input type="radio" id="neutral" name="expression" checked>
+        <label class="expression-btn" for="neutral">Neutral</label>
+
+        <input type="radio" id="happy" name="expression">
+        <label class="expression-btn" for="happy">Happy</label>
+
+        <input type="radio" id="angry" name="expression">
+        <label class="expression-btn" for="angry">Angry</label>
+    </div>
+
+    <!-- Eyes container -->
     <div class="robot-eyes">
         <div class="eye left"></div>
         <div class="eye right"></div>
