@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Robo Eyes Animation</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: lime;
+      font-family: sans-serif;
+    }
+
+    canvas {
+      background: black;
+      border: 2px solid lime;
+    }
+
+    .controls {
+      margin-top: 1em;
+    }
+
+    button {
+      margin: 0 0.5em;
+      padding: 0.5em 1em;
+      font-size: 1em;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="eyesCanvas" width="300" height="150"></canvas>
+
+  <div class="controls">
+    <button onclick="setExpression('normal')">Normal</button>
+    <button onclick="setExpression('blink')">Blink</button>
+    <button onclick="setExpression('happy')">Happy</button>
+    <button onclick="setExpression('angry')">Angry</button>
+    <button onclick="setExpression('tired')">Tired</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('eyesCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let expression = 'normal';
+    let blinkTimer = 0;
+
+    function drawEye(x, y, eyeWidth, eyeHeight, pupilOffsetX, pupilOffsetY, lidY = 0) {
+      // White of eye
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.ellipse(x, y, eyeWidth, eyeHeight, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Pupil
+      ctx.fillStyle = 'black';
+      ctx.beginPath();
+      ctx.ellipse(
+        x + pupilOffsetX,
+        y + pupilOffsetY,
+        eyeWidth * 0.3,
+        eyeHeight * 0.3,
+        0, 0, Math.PI * 2
+      );
+      ctx.fill();
+
+      // Eyelid
+      if (lidY > 0) {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(x - eyeWidth, y - eyeHeight, eyeWidth * 2, lidY);
+        ctx.fillRect(x - eyeWidth, y + eyeHeight - lidY, eyeWidth * 2, lidY);
+      }
+    }
+
+    function drawEyes() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const eyeW = 50;
+      const eyeH = 35;
+
+      let pupilX = 0;
+      let pupilY = 0;
+      let lidY = 0;
+
+      if (expression === 'blink') {
+        lidY = 35;
+      } else if (expression === 'happy') {
+        pupilY = 5;
+      } else if (expression === 'angry') {
+        pupilX = -5;
+      } else if (expression === 'tired') {
+        lidY = 15;
+      }
+
+      drawEye(90, 75, eyeW, eyeH, pupilX, pupilY, lidY);
+      drawEye(210, 75, eyeW, eyeH, pupilX, pupilY, lidY);
+    }
+
+    function animate() {
+      if (expression === 'normal' && Math.random() < 0.005) {
+        expression = 'blink';
+        blinkTimer = 10;
+      }
+
+      if (expression === 'blink' && blinkTimer > 0) {
+        blinkTimer--;
+        if (blinkTimer === 0) expression = 'normal';
+      }
+
+      drawEyes();
+      requestAnimationFrame(animate);
+    }
+
+    function setExpression(type) {
+      expression = type;
+      if (type === 'blink') blinkTimer = 10;
+    }
+
+    animate();
+  </script>
+</body>
+</html>
