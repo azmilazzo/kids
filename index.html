@@ -31,14 +31,6 @@
         .eye.left { left: 40px; }
         .eye.right { right: 40px; }
 
-        /* Default animations */
-        .eye {
-            animation: 
-                blink 3s infinite,
-                pulse 2s infinite,
-                shift 5s infinite;
-        }
-
         /* Expression controls */
         .expression-controls {
             display: flex;
@@ -74,9 +66,27 @@
         /* Neutral expression (default) */
         #neutral:checked ~ .robot-eyes .eye {
             animation: 
-                blink 3s infinite,
-                pulse 2s infinite,
-                shift 5s infinite;
+                neutral-blink 3s infinite,
+                neutral-pulse 2s infinite,
+                neutral-shift 5s infinite;
+        }
+
+        @keyframes neutral-blink {
+            0%, 90% { opacity: 1; }
+            95%, 100% { opacity: 0; }
+        }
+
+        @keyframes neutral-pulse {
+            0% { box-shadow: 0 0 10px #00BFFF, 0 0 20px #00BFFF; }
+            50% { box-shadow: 0 0 20px #00BFFF, 0 0 40px #00BFFF; }
+            100% { box-shadow: 0 0 10px #00BFFF, 0 0 20px #00BFFF; }
+        }
+
+        @keyframes neutral-shift {
+            0%, 100% { border-radius: 6px; }
+            25% { border-radius: 50%; }
+            50% { border-radius: 0 20px 0 20px / 0 10px 0 10px; }
+            75% { border-radius: 20px 0 20px 0 / 10px 0 10px 0; }
         }
 
         /* Happy expression */
