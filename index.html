@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Robot Eyes Expression Simulator</title>
+    <title>Exact Expression Simulator</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -84,6 +84,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: 14px;
+            text-transform: uppercase;
         }
 
         .control-btn:hover {
@@ -100,7 +101,7 @@
     </style>
 </head>
 <body>
-    <h1>Robot Eyes Expression Simulator</h1>
+    <h1>EXACT EXPRESSION MATRIX</h1>
     
     <div class="container">
         <div class="robot-face">
@@ -115,39 +116,63 @@
         </div>
 
         <div class="controls">
-            <button class="control-btn" data-expression="NEUTRAL">NEUTRAL</button>
-            <button class="control-btn" data-expression="SADNESS">SADNESS</button>
-            <button class="control-btn" data-expression="ANGER">ANGER</button>
-            <button class="control-btn" data-expression="HAPPINESS">HAPPINESS</button>
-            <button class="control-btn" data-expression="SURPRISE">SURPRISE</button>
-            <button class="control-btn" data-expression="DISGUST">DISGUST</button>
-            <button class="control-btn" data-expression="FEAR">FEAR</button>
-            <button class="control-btn" data-expression="SLEEP">SLEEP</button>
-            <button class="control-btn" data-expression="BORED">BORED</button>
-            <button class="control-btn" data-expression="SUSPICIOUS">SUSPICIOUS</button>
-            <button class="control-btn" data-expression="LOVE">LOVE</button>
-            <button class="control-btn" data-expression="DIZZY">DIZZY</button>
-        </div>
-    </div>
+            <!-- Six Basic Expressions -->
+            <button class="control-btn" data-expression="SADNESS">Sadness</button>
+            <button class="control-btn" data-expression="SURPRISE">Surprise</button>
+            <button class="control-btn" data-expression="ANGER">Anger</button>
+            <button class="control-btn" data-expression="DISGUST">Disgust</button>
+            <button class="control-btn" data-expression="HAPPINESS">Happiness</button>
+            <button class="control-btn" data-expression="FEAR">Fear</button>
 
-    <div class="credits">
-        Expression system based on psychological research
+            <!-- Sub-faces of Sadness -->
+            <button class="control-btn" data-expression="HORRIFIED">Horrified</button>
+            <button class="control-btn" data-expression="VULNERABLE">Vulnerable</button>
+            <button class="control-btn" data-expression="DESPAIR">Despair</button>
+
+            <!-- Sub-faces of Disgust/Anger -->
+            <button class="control-btn" data-expression="SKEPTICAL">Skeptical</button>
+            <button class="control-btn" data-expression="SUSPICIOUS">Suspicious</button>
+            <button class="control-btn" data-expression="FURIOUS">Furious</button>
+
+            <!-- Sub-faces of Anger -->
+            <button class="control-btn" data-expression="ANNOYED">Annoyed</button>
+            <button class="control-btn" data-expression="REJECTED">Rejected</button>
+
+            <!-- Sub-faces of Surprise -->
+            <button class="control-btn" data-expression="PLEADING">Pleading</button>
+            <button class="control-btn" data-expression="GUILTY">Guilty</button>
+
+            <!-- Additional Expressions -->
+            <button class="control-btn" data-expression="CONFUSED">Confused</button>
+            <button class="control-btn" data-expression="BORED">Bored</button>
+            <button class="control-btn" data-expression="ASLEEP">Asleep</button>
+        </div>
     </div>
 
     <script>
         const expressions = {
-            NEUTRAL: { left: 'neutral', right: 'neutral' },
-            SADNESS: { left: 'sad', right: 'tear', animate: 'teardrop' },
-            ANGER: { left: 'angry', right: 'angry', animate: 'shake' },
-            HAPPINESS: { left: 'happy', right: 'happy', animate: 'bounce' },
+            // Six Basic Expressions
+            SADNESS: { left: 'sad', right: 'sad', animate: 'teardrop' },
             SURPRISE: { left: 'wide', right: 'wide', animate: 'blink' },
-            DISGUST: { left: 'narrow', right: 'narrow' },
+            ANGER: { left: 'angry', right: 'angry', animate: 'shake' },
+            DISGUST: { left: 'narrow', right: 'narrow', animate: 'twitch' },
+            HAPPINESS: { left: 'smile', right: 'smile', animate: 'bounce' },
             FEAR: { left: 'spiral', right: 'spiral', animate: 'spin' },
-            SLEEP: { left: 'closed', right: 'closed' },
+
+            // Sub-faces
+            HORRIFIED: { left: 'wide', right: 'spiral', animate: 'tremble' },
+            VULNERABLE: { left: 'half', right: 'tear', animate: 'slow-blink' },
+            DESPAIR: { left: 'closed', right: 'closed', animate: 'none' },
+            SKEPTICAL: { left: 'narrow', right: 'raised', animate: 'slow-blink' },
+            SUSPICIOUS: { left: 'side', right: 'narrow', animate: 'glance' },
+            FURIOUS: { left: 'flame', right: 'flame', animate: 'vibrate' },
+            ANNOYED: { left: 'slit', right: 'slit', animate: 'pulse' },
+            REJECTED: { left: 'down', right: 'down', animate: 'fade' },
+            PLEADING: { left: 'wide', right: 'tear', animate: 'droplet' },
+            GUILTY: { left: 'down', right: 'averted', animate: 'shimmer' },
+            CONFUSED: { left: 'swirl', right: 'swirl', animate: 'wobble' },
             BORED: { left: 'half', right: 'half', animate: 'slow-blink' },
-            SUSPICIOUS: { left: 'narrow', right: 'look-side' },
-            LOVE: { left: 'heart', right: 'heart', animate: 'pulse' },
-            DIZZY: { left: 'spiral', right: 'spiral', animate: 'fast-spin' }
+            ASLEEP: { left: 'line', right: 'line', animate: 'none' }
         };
 
         const leftPupil = document.querySelector('.left-pupil');
@@ -160,101 +185,101 @@
             // Reset pupils
             leftPupil.style.transform = '';
             rightPupil.style.transform = '';
+            leftPupil.innerHTML = '';
+            rightPupil.innerHTML = '';
 
             // Set base shapes
             setEyeShape(leftPupil, expressions[expression].left);
             setEyeShape(rightPupil, expressions[expression].right);
 
             // Start animation
-            if(expressions[expression].animate) {
+            if(expressions[expression].animate !== 'none') {
                 startAnimation(expressions[expression].animate);
             }
         }
 
         function setEyeShape(pupil, shape) {
             pupil.style.cssText = '';
-            pupil.innerHTML = '';
-            
-            const baseStyle = `
-                width: 40px;
-                height: 40px;
-                top: 30px;
-                left: 30px;
-            `;
+            const baseSize = 'width: 40px; height: 40px; top: 30px; left: 30px;';
 
             switch(shape) {
-                case 'neutral':
-                    pupil.style.cssText = baseStyle + 'border-radius: 20%';
-                    break;
-                    
                 case 'sad':
                     pupil.style.cssText = `
-                        width: 50px;
-                        height: 30px;
-                        top: 40px;
-                        left: 25px;
+                        width: 50px; height: 30px;
+                        top: 40px; left: 25px;
                         border-radius: 0 0 25px 25px;
                     `;
                     break;
-                    
+
+                case 'wide':
+                    pupil.style.cssText = baseSize + 'border-radius: 50%';
+                    break;
+
                 case 'angry':
                     pupil.style.cssText = `
-                        width: 40px;
-                        height: 15px;
-                        top: 45px;
-                        transform: rotate(15deg);
+                        width: 40px; height: 15px;
+                        top: 45px; transform: rotate(15deg);
                     `;
                     break;
-                    
-                case 'happy':
+
+                case 'narrow':
                     pupil.style.cssText = `
-                        width: 50px;
-                        height: 25px;
-                        top: 55px;
-                        border-radius: 0 0 25px 25px;
+                        width: 40px; height: 10px;
+                        top: 45px;
                     `;
                     break;
-                    
-                case 'wide':
-                    pupil.style.cssText = baseStyle + 'border-radius: 50%';
+
+                case 'smile':
+                    pupil.style.cssText = `
+                        width: 50px; height: 25px;
+                        top: 55px; border-radius: 0 0 25px 25px;
+                    `;
                     break;
-                    
+
                 case 'spiral':
                     pupil.innerHTML = `
-                        <div style="position:absolute; width:100%; height:100%;
-                            background: conic-gradient(#2ecc71 20%, transparent 80%);
-                            border-radius: 50%">
-                        </div>
+                        <div style="${baseSize} background: conic-gradient(#2ecc71 20%, transparent 80%);
+                        border-radius: 50%"></div>
                     `;
                     break;
-                    
-                case 'heart':
+
+                case 'flame':
                     pupil.innerHTML = `
-                        <svg viewBox="0 0 24 24" style="width:40px; height:40px;">
-                            <path fill="#2ecc71" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                        </svg>
+                        <div style="${baseSize} background: 
+                        linear-gradient(45deg, #ff6600, #ff3300);
+                        border-radius: 15% 85% 30% 70% / 70% 30% 70% 30%;
+                        "></div>
                     `;
                     break;
-                    
-                case 'closed':
+
+                case 'raised':
                     pupil.style.cssText = `
-                        width: 40px;
-                        height: 3px;
-                        top: 48px;
+                        width: 40px; height: 40px;
+                        top: 25px; border-radius: 50%;
                     `;
                     break;
-                    
-                case 'half':
-                    pupil.style.cssText = `
-                        width: 40px;
-                        height: 20px;
-                        top: 40px;
-                    `;
-                    break;
-                    
-                case 'look-side':
+
+                case 'side':
                     pupil.style.transform = 'translateX(15px)';
                     break;
+
+                case 'swirl':
+                    pupil.innerHTML = `
+                        <div style="${baseSize} background: 
+                        repeating-radial-gradient(circle, #2ecc71 0% 10%, transparent 10% 20%);
+                        "></div>
+                    `;
+                    break;
+
+                case 'line':
+                    pupil.style.cssText = `
+                        width: 40px; height: 3px;
+                        top: 48px; left: 30px;
+                    `;
+                    break;
+
+                default:
+                    pupil.style.cssText = baseSize + 'border-radius: 20%';
             }
         }
 
@@ -265,22 +290,6 @@
                 progress += 0.05;
                 
                 switch(type) {
-                    case 'shake':
-                        leftPupil.style.transform = `translateX(${Math.sin(progress*10)*5}px)`;
-                        rightPupil.style.transform = `translateX(${Math.sin(progress*10)*5}px)`;
-                        break;
-                        
-                    case 'bounce':
-                        const offset = Math.abs(Math.sin(progress*5)) * 10;
-                        leftPupil.style.top = `${30 + offset}px`;
-                        rightPupil.style.top = `${30 + offset}px`;
-                        break;
-                        
-                    case 'spin':
-                        leftPupil.style.transform = `rotate(${progress*360}deg)`;
-                        rightPupil.style.transform = `rotate(${progress*360}deg)`;
-                        break;
-                        
                     case 'teardrop':
                         if(progress % 2 < 1) {
                             rightPupil.innerHTML += `
@@ -291,6 +300,25 @@
                             `;
                         }
                         break;
+
+                    case 'shake':
+                        leftPupil.style.transform = `translateX(${Math.sin(progress*10)*5}px)`;
+                        rightPupil.style.transform = `translateX(${Math.sin(progress*10)*5}px)`;
+                        break;
+
+                    case 'tremble':
+                        leftPupil.style.transform = `
+                            translate(${Math.random()*2-1}px, ${Math.random()*2-1}px)
+                        `;
+                        rightPupil.style.transform = `
+                            translate(${Math.random()*2-1}px, ${Math.random()*2-1}px)
+                        `;
+                        break;
+
+                    case 'vibrate':
+                        leftPupil.style.transform = `translateX(${Math.sin(progress*20)*8}px)`;
+                        rightPupil.style.transform = `translateX(${Math.sin(progress*20)*8}px)`;
+                        break;
                 }
                 
                 currentAnimation = requestAnimationFrame(animate);
@@ -299,7 +327,7 @@
             animate();
         }
 
-        // Add event listeners
+        // Event listeners
         document.querySelectorAll('.control-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.control-btn').forEach(b => b.classList.remove('active'));
@@ -309,7 +337,7 @@
         });
 
         // Initialize
-        setExpression('NEUTRAL');
+        setExpression('HAPPINESS');
     </script>
 </body>
 </html>
