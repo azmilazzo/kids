@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Robot Eyes - ESP32 Inspired</title>
+    <title>Robot Eyes Expression Simulator</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -15,7 +15,6 @@
             min-height: 100vh;
             margin: 0;
             padding: 20px;
-            overflow: hidden;
         }
 
         h1 {
@@ -43,7 +42,6 @@
             justify-content: center;
             align-items: center;
             box-shadow: 0 0 30px rgba(46, 204, 113, 0.1);
-            filter: contrast(1.2) saturate(0.9);
         }
 
         .eyes-container {
@@ -65,7 +63,7 @@
         .pupil {
             position: absolute;
             background-color: #2ecc71;
-            transition: all 0.15s cubic-bezier(0.17, 0.67, 0.44, 1.26);
+            transition: all 0.2s cubic-bezier(0.17, 0.67, 0.44, 1.26);
             box-shadow: 0 0 8px rgba(46, 204, 113, 0.3);
         }
 
@@ -75,7 +73,6 @@
             gap: 10px;
             width: 100%;
             max-width: 600px;
-            margin-top: 20px;
         }
 
         .control-btn {
@@ -103,7 +100,7 @@
     </style>
 </head>
 <body>
-    <h1>ESP32-Style Robot Eyes</h1>
+    <h1>Robot Eyes Expression Simulator</h1>
     
     <div class="container">
         <div class="robot-face">
@@ -117,182 +114,202 @@
             </div>
         </div>
 
-        <div class="controls" id="controls">
-            <button class="control-btn" data-action="blink">Blink</button>
-            <button class="control-btn" data-action="angry">Angry</button>
-            <button class="control-btn" data-action="look">Look Around</button>
-            <button class="control-btn" data-action="sleep">Sleep</button>
+        <div class="controls">
+            <button class="control-btn" data-expression="NEUTRAL">NEUTRAL</button>
+            <button class="control-btn" data-expression="SADNESS">SADNESS</button>
+            <button class="control-btn" data-expression="ANGER">ANGER</button>
+            <button class="control-btn" data-expression="HAPPINESS">HAPPINESS</button>
+            <button class="control-btn" data-expression="SURPRISE">SURPRISE</button>
+            <button class="control-btn" data-expression="DISGUST">DISGUST</button>
+            <button class="control-btn" data-expression="FEAR">FEAR</button>
+            <button class="control-btn" data-expression="SLEEP">SLEEP</button>
+            <button class="control-btn" data-expression="BORED">BORED</button>
+            <button class="control-btn" data-expression="SUSPICIOUS">SUSPICIOUS</button>
+            <button class="control-btn" data-expression="LOVE">LOVE</button>
+            <button class="control-btn" data-expression="DIZZY">DIZZY</button>
         </div>
     </div>
 
     <div class="credits">
-        Inspired by ESP32 Eyes Project | OLED Animation System
+        Expression system based on psychological research
     </div>
 
     <script>
-        class AnimationSystem {
-            constructor() {
-                this.sequences = {
-                    blink: [
-                        { left: 'open', right: 'open', duration: 50 },
-                        { left: 'half', right: 'half', duration: 30 },
-                        { left: 'closed', right: 'closed', duration: 100 },
-                        { left: 'half', right: 'half', duration: 30 },
-                        { left: 'open', right: 'open', duration: 50 }
-                    ],
-                    angry: [
-                        { left: 'angry', right: 'angry', duration: 100 },
-                        { left: 'closed_angry', right: 'closed_angry', duration: 50 },
-                        { left: 'angry', right: 'angry', duration: 100 }
-                    ],
-                    look: [
-                        { left: 'left', right: 'left', duration: 1000 },
-                        { left: 'center', right: 'center', duration: 1000 },
-                        { left: 'right', right: 'right', duration: 1000 }
-                    ],
-                    sleep: [
-                        { left: 'sleep', right: 'sleep', duration: 2000 }
-                    ]
-                };
-                this.currentSequence = [];
-                this.isPlaying = false;
-            }
-
-            playSequence(sequenceName) {
-                this.currentSequence = [...this.sequences[sequenceName]];
-                this.isPlaying = true;
-                this._animate();
-            }
-
-            _animate() {
-                if (!this.isPlaying || this.currentSequence.length === 0) return;
-                
-                const frame = this.currentSequence.shift();
-                this._applyFrame(frame);
-                
-                setTimeout(() => this._animate(), frame.duration);
-            }
-
-            _applyFrame({ left, right }) {
-                setEyeShape(leftPupil, left);
-                setEyeShape(rightPupil, right);
-            }
-        }
+        const expressions = {
+            NEUTRAL: { left: 'neutral', right: 'neutral' },
+            SADNESS: { left: 'sad', right: 'tear', animate: 'teardrop' },
+            ANGER: { left: 'angry', right: 'angry', animate: 'shake' },
+            HAPPINESS: { left: 'happy', right: 'happy', animate: 'bounce' },
+            SURPRISE: { left: 'wide', right: 'wide', animate: 'blink' },
+            DISGUST: { left: 'narrow', right: 'narrow' },
+            FEAR: { left: 'spiral', right: 'spiral', animate: 'spin' },
+            SLEEP: { left: 'closed', right: 'closed' },
+            BORED: { left: 'half', right: 'half', animate: 'slow-blink' },
+            SUSPICIOUS: { left: 'narrow', right: 'look-side' },
+            LOVE: { left: 'heart', right: 'heart', animate: 'pulse' },
+            DIZZY: { left: 'spiral', right: 'spiral', animate: 'fast-spin' }
+        };
 
         const leftPupil = document.querySelector('.left-pupil');
         const rightPupil = document.querySelector('.right-pupil');
-        const robotFace = document.querySelector('.robot-face');
-        const animSystem = new AnimationSystem();
+        let currentAnimation = null;
 
-        function setEyeShape(pupilElement, shape) {
-            pupilElement.style.cssText = '';
-            pupilElement.innerHTML = '';
+        function setExpression(expression) {
+            if(currentAnimation) cancelAnimationFrame(currentAnimation);
             
+            // Reset pupils
+            leftPupil.style.transform = '';
+            rightPupil.style.transform = '';
+
+            // Set base shapes
+            setEyeShape(leftPupil, expressions[expression].left);
+            setEyeShape(rightPupil, expressions[expression].right);
+
+            // Start animation
+            if(expressions[expression].animate) {
+                startAnimation(expressions[expression].animate);
+            }
+        }
+
+        function setEyeShape(pupil, shape) {
+            pupil.style.cssText = '';
+            pupil.innerHTML = '';
+            
+            const baseStyle = `
+                width: 40px;
+                height: 40px;
+                top: 30px;
+                left: 30px;
+            `;
+
             switch(shape) {
-                case 'open':
-                    pupilElement.style.width = '40px';
-                    pupilElement.style.height = '40px';
-                    pupilElement.style.borderRadius = '50%';
-                    pupilElement.style.top = '30px';
-                    pupilElement.style.left = '30px';
+                case 'neutral':
+                    pupil.style.cssText = baseStyle + 'border-radius: 20%';
                     break;
                     
-                case 'half':
-                    pupilElement.style.width = '40px';
-                    pupilElement.style.height = '20px';
-                    pupilElement.style.top = '40px';
-                    pupilElement.style.left = '30px';
-                    break;
-                    
-                case 'closed':
-                    pupilElement.style.width = '40px';
-                    pupilElement.style.height = '3px';
-                    pupilElement.style.top = '48px';
-                    pupilElement.style.left = '30px';
-                    break;
-                    
-                case 'angry':
-                    pupilElement.style.width = '40px';
-                    pupilElement.style.height = '10px';
-                    pupilElement.style.top = '45px';
-                    pupilElement.style.transform = 'rotate(15deg)';
-                    break;
-                    
-                case 'closed_angry':
-                    pupilElement.innerHTML = `
-                        <div style="position:absolute; width:100%; height:4px; 
-                            background:#2ecc71; top:48px; left:0"></div>
-                        <div style="position:absolute; width:30px; height:30px;
-                            border:2px solid #2ecc71; border-radius:50%;
-                            top:15px; left:15px; opacity:0.3"></div>
+                case 'sad':
+                    pupil.style.cssText = `
+                        width: 50px;
+                        height: 30px;
+                        top: 40px;
+                        left: 25px;
+                        border-radius: 0 0 25px 25px;
                     `;
                     break;
                     
-                case 'left':
-                    pupilElement.style.transform = 'translateX(-15px)';
+                case 'angry':
+                    pupil.style.cssText = `
+                        width: 40px;
+                        height: 15px;
+                        top: 45px;
+                        transform: rotate(15deg);
+                    `;
                     break;
                     
-                case 'right':
-                    pupilElement.style.transform = 'translateX(15px)';
+                case 'happy':
+                    pupil.style.cssText = `
+                        width: 50px;
+                        height: 25px;
+                        top: 55px;
+                        border-radius: 0 0 25px 25px;
+                    `;
                     break;
                     
-                case 'center':
-                    pupilElement.style.transform = 'translateX(0)';
+                case 'wide':
+                    pupil.style.cssText = baseStyle + 'border-radius: 50%';
                     break;
                     
-                case 'sleep':
-                    pupilElement.style.width = '40px';
-                    pupilElement.style.height = '3px';
-                    pupilElement.style.top = '48px';
-                    pupilElement.style.left = '30px';
+                case 'spiral':
+                    pupil.innerHTML = `
+                        <div style="position:absolute; width:100%; height:100%;
+                            background: conic-gradient(#2ecc71 20%, transparent 80%);
+                            border-radius: 50%">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'heart':
+                    pupil.innerHTML = `
+                        <svg viewBox="0 0 24 24" style="width:40px; height:40px;">
+                            <path fill="#2ecc71" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                    `;
+                    break;
+                    
+                case 'closed':
+                    pupil.style.cssText = `
+                        width: 40px;
+                        height: 3px;
+                        top: 48px;
+                    `;
+                    break;
+                    
+                case 'half':
+                    pupil.style.cssText = `
+                        width: 40px;
+                        height: 20px;
+                        top: 40px;
+                    `;
+                    break;
+                    
+                case 'look-side':
+                    pupil.style.transform = 'translateX(15px)';
                     break;
             }
         }
 
-        // ESP32-style gaze tracking
-        let targetX = 30, targetY = 30;
-        function lerp(start, end, amt) {
-            return (1 - amt) * start + amt * end;
+        function startAnimation(type) {
+            let progress = 0;
+            
+            function animate() {
+                progress += 0.05;
+                
+                switch(type) {
+                    case 'shake':
+                        leftPupil.style.transform = `translateX(${Math.sin(progress*10)*5}px)`;
+                        rightPupil.style.transform = `translateX(${Math.sin(progress*10)*5}px)`;
+                        break;
+                        
+                    case 'bounce':
+                        const offset = Math.abs(Math.sin(progress*5)) * 10;
+                        leftPupil.style.top = `${30 + offset}px`;
+                        rightPupil.style.top = `${30 + offset}px`;
+                        break;
+                        
+                    case 'spin':
+                        leftPupil.style.transform = `rotate(${progress*360}deg)`;
+                        rightPupil.style.transform = `rotate(${progress*360}deg)`;
+                        break;
+                        
+                    case 'teardrop':
+                        if(progress % 2 < 1) {
+                            rightPupil.innerHTML += `
+                                <div style="position:absolute; width:8px; height:15px;
+                                    background:#2ecc71; top:70px; left:46px;
+                                    border-radius:50%; opacity:${1 - (progress%1)}">
+                                </div>
+                            `;
+                        }
+                        break;
+                }
+                
+                currentAnimation = requestAnimationFrame(animate);
+            }
+            
+            animate();
         }
 
-        function updateGaze() {
-            const currentX = parseFloat(leftPupil.style.left) || 30;
-            const currentY = parseFloat(leftPupil.style.top) || 30;
-            
-            const newX = lerp(currentX, targetX, 0.15);
-            const newY = lerp(currentY, targetY, 0.15);
-            
-            [leftPupil, rightPupil].forEach(eye => {
-                eye.style.left = `${newX}px`;
-                eye.style.top = `${newY}px`;
-            });
-            
-            requestAnimationFrame(updateGaze);
-        }
-
-        // Event listeners
-        document.addEventListener('mousemove', (e) => {
-            const rect = robotFace.getBoundingClientRect();
-            targetX = ((e.clientX - rect.left) / rect.width) * 40 + 20;
-            targetY = ((e.clientY - rect.top) / rect.height) * 40 + 20;
-        });
-
+        // Add event listeners
         document.querySelectorAll('.control-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                animSystem.playSequence(btn.dataset.action);
+                document.querySelectorAll('.control-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                setExpression(btn.dataset.expression);
             });
         });
 
-        // Start systems
-        updateGaze();
-        setInterval(() => {
-            if(Math.random() < 0.4) animSystem.playSequence('blink');
-            if(Math.random() < 0.1) animSystem.playSequence('look');
-        }, 5000);
-
-        // Initial state
-        setEyeShape(leftPupil, 'open');
-        setEyeShape(rightPupil, 'open');
+        // Initialize
+        setExpression('NEUTRAL');
     </script>
 </body>
 </html>
