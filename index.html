@@ -3,204 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robotic Eyes Animation</title>
     <style>
-        body {
-            background-color: #d3d3d3;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            margin: 0;
-            font-family: 'Arial', sans-serif;
-        }
-
-        .wrapper {
-            text-align: center;
-        }
-
-        .eye-container {
-            background-color: black;
-            width: 200px;
-            height: 100px;
-            margin: 0 auto;
+        /* Container for the eyes */
+        .robot-eyes {
             position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            width: 300px;
+            height: 200px;
+            margin: 50px auto;
+            background: #000;
+            overflow: hidden;
         }
 
+        /* Base eye styles */
         .eye {
-            background-color: white;
-            border-radius: 50%;
             position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 80px;
+            height: 80px;
+            background: #00BFFF;
+            border-radius: 6px;
+            box-shadow: 0 0 10px #00BFFF, 0 0 20px #00BFFF;
+            animation: 
+                blink 3s infinite,
+                pulse 2s infinite,
+                shift 5s infinite;
         }
 
-        .sadness .eye {
-            width: 40px;
-            height: 60px;
+        /* Left eye positioning */
+        .eye.left {
+            left: 40px;
         }
 
-        .sadness .eye.left {
-            transform: rotate(30deg);
-            left: 50px;
+        /* Right eye positioning */
+        .eye.right {
+            right: 40px;
         }
 
-        .sadness .eye.right {
-            transform: rotate(-30deg);
-            right: 50px;
+        /* Blinking animation */
+        @keyframes blink {
+            0%, 90% { opacity: 1; }
+            95%, 100% { opacity: 0; }
         }
 
-        .surprise .eye {
-            width: 40px;
-            height: 60px;
+        /* Brightness pulsing */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 10px #00BFFF, 0 0 20px #00BFFF; }
+            50% { box-shadow: 0 0 20px #00BFFF, 0 0 40px #00BFFF; }
+            100% { box-shadow: 0 0 10px #00BFFF, 0 0 20px #00BFFF; }
         }
 
-        .horrified .eye {
-            width: 40px;
-            height: 60px;
+        /* Shape shifting */
+        @keyframes shift {
+            0%, 100% { border-radius: 6px; }
+            25% { border-radius: 50%; }
+            50% { border-radius: 0 20px 0 20px / 0 10px 0 10px; }
+            75% { border-radius: 20px 0 20px 0 / 10px 0 10px 0; }
         }
 
-        .horrified .eye.left {
-            transform: rotate(-10deg);
-            left: 50px;
-        }
-
-        .horrified .eye.right {
-            transform: rotate(10deg);
-            right: 50px;
-        }
-
-        .furious .eye {
-            width: 40px;
-            height: 20px;
-        }
-
-        .furious .eye.left {
-            transform: rotate(-20deg);
-            left: 50px;
-        }
-
-        .furious .eye.right {
-            transform: rotate(20deg);
-            right: 50px;
-        }
-
-        .skeptical .eye {
-            width: 40px;
-            height: 60px;
-        }
-
-        .skeptical .eye.left {
-            transform: rotate(20deg);
-            left: 50px;
-        }
-
-        .skeptical .eye.right {
-            transform: rotate(-10deg);
-            right: 50px;
-        }
-
-        .suspicious .eye {
-            width: 40px;
-            height: 10px;
-        }
-
-        .anger .eye {
-            width: 40px;
-            height: 40px;
-        }
-
-        .anger .eye.left {
-            transform: rotate(-20deg);
-            left: 50px;
-        }
-
-        .anger .eye.right {
-            transform: rotate(20deg);
-            right: 50px;
-        }
-
-        .disgust .eye {
-            width: 40px;
-            height: 30px;
-        }
-
-        .happiness .eye {
-            width: 40px;
-            height: 40px;
-        }
-
-        .label {
-            margin-top: 10px;
-            font-size: 24px;
+        /* Responsive scaling */
+        @media (max-width: 600px) {
+            .robot-eyes {
+                transform: scale(0.8);
+            }
         }
     </style>
-    <title>Robot Eyes</title>
 </head>
 <body>
-    <div class="wrapper sadness">
-        <div class="eye-container">
-            <div class="eye left"></div>
-            <div class="eye right"></div>
-        </div>
-        <div class="label">SADNESS</div>
-    </div>
-    <div class="wrapper surprise">
-        <div class="eye-container">
-            <div class="eye left"></div>
-            <div class="eye right"></div>
-        </div>
-        <div class="label">SURPRISE</div>
-    </div>
-    <div class="wrapper horrified">
-        <div class="eye-container">
-            <div class="eye left"></div>
-            <div class="eye right"></div>
-        </div>
-        <div class="label">HORRIFIED</div>
-    </div>
-    <div class="wrapper furious">
-        <div class="eye-container">
-            <div class="eye left"></div>
-            <div class="eye right"></div>
-        </div>
-        <div class="label">FURIOUS</div>
-    </div>
-    <div class="wrapper skeptical">
-        <div class="eye-container">
-            <div class="eye left"></div>
-            <div class="eye right"></div>
-        </div>
-        <div class="label">SKEPTICAL</div>
-    </div>
-    <div class="wrapper suspicious">
-        <div class="eye-container">
-            <div class="eye left"></div>
-            <div class="eye right"></div>
-        </div>
-        <div class="label">SUSPICIOUS</div>
-    </div>
-    <div class="wrapper anger">
-        <div class="eye-container">
-            <div class="eye left"></div>
-            <div class="eye right"></div>
-        </div>
-        <div class="label">ANGER</div>
-    </div>
-    <div class="wrapper disgust">
-        <div class="eye-container">
-            <div class="eye left"></div>
-            <div class="eye right"></div>
-        </div>
-        <div class="label">DISGUST</div>
-    </div>
-    <div class="wrapper happiness">
-        <div class="eye-container">
-            <div class="eye left"></div>
-            <div class="eye right"></div>
-        </div>
-        <div class="label">HAPPINESS</div>
+    <div class="robot-eyes">
+        <div class="eye left"></div>
+        <div class="eye right"></div>
     </div>
 </body>
 </html>
