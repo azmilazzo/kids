@@ -23,7 +23,7 @@
 
     .card {
       max-width: 48rem;
-      width: 100%;
+      width: 100%; /* Ensure card takes full width on smaller screens */
       background: rgba(255, 255, 255, 0.95);
       border-radius: 1.5rem;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -43,7 +43,7 @@
       font-size: 2.5rem;
       font-weight: bold;
       margin: 0;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     .status {
@@ -60,8 +60,11 @@
     }
 
     .eye-box {
-      width: 28rem;
-      height: 18rem;
+      /* Use viewport width (vw) for responsive sizing */
+      width: 90vw; /* Takes 90% of viewport width */
+      max-width: 28rem; /* Retain max-width for larger screens */
+      height: auto; /* Allow height to adjust proportionally */
+      aspect-ratio: 28 / 18; /* Maintain aspect ratio (width / height) */
       background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
       border-radius: 2rem;
       margin-bottom: 2rem;
@@ -70,27 +73,40 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      box-shadow: 
-        inset 0 2px 4px rgba(255,255,255,0.1),
-        0 8px 32px rgba(0,0,0,0.3);
+      box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.1),
+        0 8px 32px rgba(0, 0, 0, 0.3);
     }
 
     .eyes {
       display: flex;
-      gap: 4rem;
+      /* Use relative units for gap, e.g., vw or em */
+      gap: 10vw; /* Adjust gap based on viewport width */
+      max-gap: 4rem; /* Set a maximum gap for larger screens */
       position: relative;
+      /* Ensure eyes scale down without overflowing their container */
+      transform: scale(0.7); /* Start with a slightly smaller scale for initial fit */
+    }
+
+    @media (min-width: 600px) {
+      /* Adjust scale for larger screens if needed */
+      .eyes {
+        transform: scale(1);
+      }
     }
 
     .eye-container {
-      width: 7rem;
-      height: 7rem;
+      /* Use relative units for eye container, e.g., vw or percentage of parent */
+      width: 20vw; /* Example: 20% of viewport width */
+      max-width: 7rem; /* Retain max-width for larger screens */
+      height: auto; /* Allow height to adjust */
+      aspect-ratio: 1 / 1; /* Maintain aspect ratio */
       position: relative;
       overflow: visible;
     }
 
     .eye {
-      width: 6rem;
-      height: 6rem;
+      width: 100%; /* Eyes fill their container */
+      height: 100%; /* Eyes fill their container */
       background: linear-gradient(145deg, #4f46e5, #3b82f6);
       border-radius: 0.75rem;
       position: absolute;
@@ -98,131 +114,13 @@
       left: 50%;
       transform: translate(-50%, -50%);
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 
-        0 0 20px rgba(59, 130, 246, 0.4),
-        inset 0 2px 4px rgba(255,255,255,0.2);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.4),
+        inset 0 2px 4px rgba(255, 255, 255, 0.2);
     }
 
     .pupil {
       display: none;
-      /* Keeping for future use
-      width: 1.5rem;
-      height: 1.5rem;
-      background: radial-gradient(circle at 30% 30%, #ffffff, #1e293b);
-      border-radius: 50%;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      transition: transform 0.2s ease-out;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-      */
     }
-
-    /* Expression styles - keeping for future use
-    .eye.happy {
-      height: 3.5rem;
-      border-radius: 3rem 3rem 0 0;
-      animation: happy-bounce 0.6s ease-in-out infinite;
-    }
-
-    @keyframes happy-bounce {
-      0% { transform: translate(-50%, -50%) translateY(-1rem); }
-      50% { transform: translate(-50%, -50%) translateY(-1.2rem); }
-      100% { transform: translate(-50%, -50%) translateY(-1rem); }
-    }
-
-    .happy-mouth {
-      position: absolute;
-      width: 8rem;
-      height: 5rem;
-      border: 0.3rem solid transparent;
-      bottom: 25%;
-      left: 50%;
-      transform: translateX(-50%);
-      box-sizing: border-box;
-      border-radius: 50%;
-      border-bottom-color: #fbbf24;
-      opacity: 0;
-      display: none;
-      z-index: 5;
-      filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));
-    }
-
-    .happy-mouth.active {
-      display: block;
-      animation: happy-mouth-appear 0.8s ease-out forwards;
-    }
-
-    @keyframes happy-mouth-appear {
-      0% { 
-        opacity: 0;
-        width: 3rem;
-        height: 2rem;
-        transform: translateX(-50%) scale(0.5);
-      }
-      100% { 
-        opacity: 1;
-        width: 8rem;
-        height: 5rem;
-        transform: translateX(-50%) scale(1);
-      }
-    }
-
-    .eye.sad {
-      background: linear-gradient(145deg, #1e40af, #1e3a8a);
-      height: 3rem;
-      border-radius: 0 0 3rem 3rem;
-      animation: sad-droop 2s ease-out forwards;
-    }
-
-    @keyframes sad-droop {
-      0% { 
-        height: 6rem;
-        border-radius: 0.75rem;
-        transform: translate(-50%, -50%);
-      }
-      100% { 
-        height: 3rem;
-        border-radius: 0 0 3rem 3rem;
-        transform: translate(-50%, -50%) translateY(2rem);
-      }
-    }
-
-    .sad-mouth {
-      position: absolute;
-      width: 6rem;
-      height: 6rem;
-      border: 0.25rem solid #6b7280;
-      bottom: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      box-sizing: border-box;
-      border-radius: 50%;
-      border-top-color: transparent;
-      border-left-color: transparent;
-      border-right-color: transparent;
-      opacity: 0;
-      display: none;
-      z-index: 5;
-    }
-
-    .sad-mouth.active {
-      display: block;
-      animation: sad-mouth-appear 2s ease-out forwards;
-    }
-
-    @keyframes sad-mouth-appear {
-      0% { 
-        opacity: 0;
-        transform: translateX(-50%) scale(0.5);
-      }
-      100% { 
-        opacity: 1;
-        transform: translateX(-50%) scale(1);
-      }
-    }
-    */
 
     .blink {
       height: 0.3rem !important;
@@ -306,7 +204,6 @@
   </style>
 </head>
 <body>
-  <!-- Hidden camera elements -->
   <video id="video" autoplay playsinline></video>
   <canvas id="canvas"></canvas>
 
@@ -325,31 +222,17 @@
         <div class="eyes">
           <div class="eye-container">
             <div class="eye" id="left-eye">
-              <!-- <div class="pupil" id="left-pupil"></div> keeping for future use -->
             </div>
           </div>
           <div class="eye-container">
             <div class="eye" id="right-eye">
-              <!-- <div class="pupil" id="right-pupil"></div> keeping for future use -->
             </div>
           </div>
         </div>
-        <!-- Expression elements - keeping for future use
-        <div class="sad-mouth" id="sad-mouth"></div>
-        <div class="happy-mouth" id="happy-mouth"></div>
-        -->
       </div>
-      <!-- Expression controls - keeping for future use
-      <div class="controls">
-        <button class="control-button" data-expr="happy">😄 Happy</button>
-        <button class="control-button" data-expr="sad">😢 Sad</button>
-        <button class="control-button" id="reset-btn">🔄 Reset</button>
-      </div>
-      -->
     </div>
   </div>
 
-  <!-- Load dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 
@@ -358,14 +241,8 @@
       const videoElement = document.getElementById('video');
       const leftEye = document.getElementById('left-eye');
       const rightEye = document.getElementById('right-eye');
-      // const leftPupil = document.getElementById('left-pupil'); // keeping for future use
-      // const rightPupil = document.getElementById('right-pupil'); // keeping for future use
       const cameraStatus = document.getElementById('camera-status');
       const statusText = document.getElementById('status-text');
-      // Expression elements - keeping for future use
-      // const sadMouth = document.getElementById('sad-mouth');
-      // const happyMouth = document.getElementById('happy-mouth');
-      // const resetBtn = document.getElementById('reset-btn');
 
       let isBlinking = false;
       let isIdleMode = true;
@@ -374,9 +251,6 @@
       let expressionTimeout = null;
       let faceDetected = false;
       let lastFaceTime = Date.now();
-
-      // Eye movement constraints
-      const PUPIL_RANGE = 1.5; // How far pupils can move from center
 
       function updateCameraStatus(active, text) {
         cameraStatus.className = `camera-status ${active ? 'active' : 'inactive'}`;
@@ -401,17 +275,8 @@
         const relX = Math.max(-1, Math.min(1, (x - centerX) / (window.innerWidth * 0.25)));
         const relY = Math.max(-1, Math.min(1, (y - centerY) / (window.innerHeight * 0.25)));
 
-        /* Pupil movement - keeping for future use
-        // Move pupils within their range
-        const pupilX = relX * PUPIL_RANGE;
-        const pupilY = relY * PUPIL_RANGE;
-
-        leftPupil.style.transform = `translate(calc(-50% + ${pupilX}rem), calc(-50% + ${pupilY}rem))`;
-        rightPupil.style.transform = `translate(calc(-50% + ${pupilX}rem), calc(-50% + ${pupilY}rem))`;
-        */
-
         // Move entire eyes for tracking effect
-        const eyeX = relX * 2;
+        const eyeX = relX * 2; 
         const eyeY = relY * 2;
         
         leftEye.style.transform = `translate(calc(-50% + ${eyeX}rem), calc(-50% + ${eyeY}rem))`;
@@ -427,24 +292,8 @@
         rightEye.className = 'eye';
         leftEye.style.transform = 'translate(-50%, -50%)';
         rightEye.style.transform = 'translate(-50%, -50%)';
-        // leftPupil.style.transform = 'translate(-50%, -50%)'; // keeping for future use
-        // rightPupil.style.transform = 'translate(-50%, -50%)'; // keeping for future use
-        
-        /* Expression reset - keeping for future use
-        sadMouth.style.display = 'none';
-        sadMouth.classList.remove('active');
-        happyMouth.style.display = 'none';
-        happyMouth.classList.remove('active');
-        */
         
         isExpressionActive = false;
-        
-        /* Button state reset - keeping for future use
-        // Clear active states
-        document.querySelectorAll('[data-expr]').forEach(btn => {
-          btn.classList.remove('active');
-        });
-        */
       }
 
       function setupBlinking() {
@@ -490,36 +339,6 @@
         const initialDelay = Math.random() * 1500 + 1000;
         idleTimer = setTimeout(moveEyes, initialDelay);
       }
-
-      /* Expression function - keeping for future use
-      function setExpression(expression) {
-        resetEyes();
-        isExpressionActive = true;
-        clearIdleTimer();
-
-        // Set active state on button
-        document.querySelectorAll('[data-expr]').forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.expr === expression);
-        });
-
-        if (expression === 'sad') {
-          leftEye.className = 'eye sad';
-          rightEye.className = 'eye sad';
-          sadMouth.style.display = 'block';
-          sadMouth.classList.add('active');
-        } else if (expression === 'happy') {
-          leftEye.className = 'eye happy';
-          rightEye.className = 'eye happy';
-          happyMouth.style.display = 'block';
-          happyMouth.classList.add('active');
-        }
-
-        expressionTimeout = setTimeout(() => {
-          resetEyes();
-          setupIdleMovement();
-        }, 5000);
-      }
-      */
 
       // Initialize MediaPipe FaceMesh
       const faceMesh = new FaceMesh({
@@ -586,35 +405,15 @@
       }).catch((error) => {
         console.error('Camera access failed:', error);
         updateCameraStatus(false, "Camera access failed");
-        isIdleMode = true;
+        isIdleMode = true; // Fallback to idle mode if camera fails
         setupBlinking();
         setupIdleMovement();
       });
 
-      /* Event listeners for expressions - keeping for future use
-      // Event listeners
-      document.addEventListener('click', function(e) {
-        const exprBtn = e.target.closest('[data-expr]');
-        if (exprBtn) {
-          setExpression(exprBtn.dataset.expr);
-          return;
-        }
-        
-        if (e.target === resetBtn) {
-          resetEyes();
-          setupIdleMovement();
-        }
-      });
-      */
-
       // Handle window resize
       window.addEventListener('resize', () => {
-        if (camera) {
-          camera.stop();
-          setTimeout(() => {
-            camera.start();
-          }, 100);
-        }
+        // For simplicity, we'll let CSS handle the scaling here.
+        // If camera stream itself needs adjustment, you might re-start it.
       });
 
       // Check for face detection timeout periodically
