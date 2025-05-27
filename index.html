@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Robo A.I.</title>
+  <title>Robo A.I. with Expressions</title>
   <style>
     body {
       margin: 0;
@@ -18,7 +18,7 @@
 
     #video,
     #canvas {
-      display: none; /* Hide video and canvas */
+      display: none; /* Hide video and canvas, not used in this version */
     }
 
     .card {
@@ -60,7 +60,6 @@
     }
 
     .eye-box {
-      /* Use viewport width (vw) for responsive sizing */
       width: 90vw; /* Takes 90% of viewport width */
       max-width: 28rem; /* Retain max-width for larger screens */
       height: auto; /* Allow height to adjust proportionally */
@@ -75,28 +74,25 @@
       overflow: hidden;
       box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.1),
         0 8px 32px rgba(0, 0, 0, 0.3);
+      cursor: crosshair; /* Added cursor for interactivity indication */
     }
 
     .eyes {
       display: flex;
-      /* Increased gap for better separation at larger sizes */
-      gap: 15vw;
+      gap: 15vw; /* Increased gap for better separation at larger sizes */
       max-gap: 4rem; /* Set a maximum gap for larger screens */
       position: relative;
-      /* Slightly larger initial scale for mobile */
-      transform: scale(0.8);
+      transform: scale(0.8); /* Slightly larger initial scale for mobile */
     }
 
     @media (min-width: 600px) {
-      /* Adjust scale for larger screens to revert to original size */
       .eyes {
-        transform: scale(1);
+        transform: scale(1); /* Adjust scale for larger screens to revert to original size */
       }
     }
 
     .eye-container {
-      /* Increased width relative to viewport to make eyes bigger */
-      width: 25vw;
+      width: 25vw; /* Increased width relative to viewport to make eyes bigger */
       max-width: 7rem; /* Retain max-width for larger screens */
       height: auto; /* Allow height to adjust */
       aspect-ratio: 1 / 1; /* Maintain aspect ratio */
@@ -107,37 +103,457 @@
     .eye {
       width: 100%; /* Eyes fill their container */
       height: 100%; /* Eyes fill their container */
-      background: linear-gradient(145deg, #4f46e5, #3b82f6);
-      border-radius: 0.75rem;
+      background: #3b82f6; /* Default eye color from roboeyes.html */
+      border-radius: 0.5rem; /* Slightly smaller border-radius for more square-ish original look */
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Slower transition for expressions */
       box-shadow: 0 0 20px rgba(59, 130, 246, 0.4),
         inset 0 2px 4px rgba(255, 255, 255, 0.2);
     }
 
-    .blink {
-      height: 0.3rem !important;
-      transform: translate(-50%, -50%) scaleY(0.05) !important;
-      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    /* --- Expression Styles from roboeyes.html --- */
+    .eye.happy {
+      height: 3rem; /* Adjusted for proportionality */
+      border-radius: 2.75rem 2.75rem 0 0;
+      animation: happy-bounce 0.3s ease-in-out infinite;
     }
+    @keyframes happy-bounce {
+      0% { transform: translate(-50%, -50%) translateY(-2.5rem); }
+      50% { transform: translate(-50%, -50%) translateY(-2.7rem); }
+      100% { transform: translate(-50%, -50%) translateY(-2.5rem); }
+    }
+    .happy-mouth {
+      position: absolute;
+      width: 6rem;
+      height: 4rem;
+      border: 0.2rem solid transparent;
+      bottom: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+      box-sizing: border-box;
+      border-radius: 50%;
+      border-bottom-color: #fbbf24;
+      opacity: 0;
+      display: none;
+      z-index: 5;
+    }
+    .happy-mouth.active {
+      display: block;
+      animation: happy-mouth-appear 0.5s ease-in-out forwards;
+    }
+    @keyframes happy-mouth-appear {
+      0% {
+        opacity: 0;
+        width: 2rem;
+        height: 1rem;
+        border-width: 0.1rem;
+        transform: translateX(-50%) scale(0.5);
+      }
+      50% {
+        opacity: 0.8;
+        width: 4rem;
+        height: 1.5rem;
+        border-width: 0.15rem;
+        transform: translateX(-50%) scale(0.8);
+      }
+      100% {
+        opacity: 1;
+        width: 6rem;
+        height: 2rem;
+        border-width: 0.2rem;
+        transform: translateX(-50%) scale(1);
+      }
+    }
+    .eye.sad {
+      background: #1e40af;
+      height: 2.75rem; /* Adjusted for proportionality */
+      width: 5.5rem; /* Adjusted for proportionality */
+      border-radius: 0 0 2.75rem 2.75rem;
+      transform: translate(-50%, -50%);
+      animation: sad-transition 3s ease-in-out forwards;
+    }
+    @keyframes sad-transition {
+      0% {
+        height: 5.5rem; /* Adjusted from 6rem in roboeyes.html */
+        border-radius: 0.5rem;
+        transform: translate(-50%, -50%);
+      }
+      50% {
+        height: 2.75rem;
+        border-radius: 0 0 2.75rem 2.75rem;
+        transform: translate(-50%, -50%);
+      }
+      100% {
+        height: 2.75rem;
+        border-radius: 0 0 2.75rem 2.75rem;
+        transform: translate(-50%, -50%) translateY(4rem);
+      }
+    }
+    .sad-mouth {
+      position: absolute;
+      width: 6rem;
+      height: 6rem;
+      border: 0.2rem solid transparent;
+      bottom: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      box-sizing: border-box;
+      border-radius: 50%;
+      border-top-color: #374151;
+      opacity: 0;
+      display: none;
+      z-index: 5;
+    }
+    .sad-mouth.active {
+      display: block;
+      animation: sad-mouth-appear 3s ease-in-out forwards;
+    }
+    @keyframes sad-mouth-appear {
+      0% {
+        opacity: 0;
+        width: 2rem;
+        height: 2rem;
+        border-width: 0.1rem;
+        transform: translateX(-50%) translateY(0) scale(0.5);
+        bottom: 20%;
+      }
+      30% {
+        opacity: 0.7;
+        width: 3rem;
+        height: 3rem;
+        border-width: 0.15rem;
+        transform: translateX(-50%) translateY(2rem) scale(0.8);
+        bottom: 18%;
+      }
+      60% {
+        opacity: 0.9;
+        width: 4.5rem;
+        height: 4.5rem;
+        border-width: 0.18rem;
+        transform: translateX(-50%) translateY(4rem) scale(0.9);
+        bottom: 16%;
+      }
+      100% {
+        opacity: 1;
+        width: 6rem;
+        height: 6rem;
+        border-width: 0.2rem;
+        transform: translateX(-50%) translateY(5rem) scale(1);
+        bottom: 14%;
+      }
+    }
+    .eye.angry {
+      background: #dc2626;
+      height: 5.5rem;
+      width: 6rem;
+      clip-path: polygon(100% 0%, 100% 100%, 0% 50%);
+      transform: translate(-50%, -50%);
+      animation: angry-shake 0.1s ease-in-out infinite;
+    }
+    .eye.angry.left {
+      clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
+      transform: translate(-50%, -50%) scaleX(-1);
+    }
+    @keyframes angry-shake {
+      0% { transform: translate(-50%, -50%) translateY(3rem); }
+      25% { transform: translate(-50%, -50%) translate(0.1rem, 3rem); }
+      50% { transform: translate(-50%, -50%) translate(-0.1rem, 3rem); }
+      75% { transform: translate(-50%, -50%) translate(0.1rem, 3rem); }
+      100% { transform: translate(-50%, -50%) translateY(3rem); }
+    }
+    .anger-symbol {
+      position: absolute;
+      top: 20%;
+      right: 20%;
+      font-size: 2.5rem;
+      opacity: 0;
+      display: none;
+      z-index: 10;
+      animation: pulse 0.3s ease-in-out infinite alternate;
+    }
+    .eye.dizzy {
+      background: transparent;
+    }
+    .eye.dizzy::before {
+      content: '';
+      --b: 8px;
+      --s: 80px; /* Adjusted to be proportional to eye size */
+      --c: #CD8C52;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: var(--s);
+      aspect-ratio: 1;
+      background:
+        repeating-radial-gradient(calc(2*var(--b)) at top,#0000 -1px,var(--c) 0 calc(50% - 1px),#0000 50% calc(100% - 1px)) calc(50% + var(--b)) 100%,
+        repeating-radial-gradient(calc(2*var(--b)) at bottom,var(--c) -1px,#0000 0 calc(50% - 1px),var(--c) 50% calc(100% - 1px)) 50% 0;
+      background-size: 150% 50%;
+      background-repeat: no-repeat;
+      mask:
+        radial-gradient(calc(1.5*var(--b)) at calc(100% - var(--b)/2) 0, #0000 calc(100%/3), #000 calc(100%/3 + 1px) 110%, #0000 0) calc(50% + var(--b)/2)
+         100%/calc(3*var(--b)) 50% exclude no-repeat,
+        conic-gradient(#000 0 0);
+      animation: spiral-rotate 1s linear infinite;
+    }
+    @keyframes spiral-rotate {
+      to { transform: translate(-50%, -50%) rotate(-360deg); }
+    }
+    .eye.love {
+      background: #ec4899;
+      border-radius: 50%;
+      position: relative;
+      animation: love-pulse 0.8s ease-in-out infinite;
+    }
+    .eye.love::before {
+      content: '♥';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3.5rem;
+      color: white;
+      animation: heart-beat 0.8s ease-in-out infinite;
+    }
+    @keyframes love-pulse {
+      0% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.1); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+    @keyframes heart-beat {
+      0% { transform: translate(-50%, -50%) scale(1); }
+      25% { transform: translate(-50%, -50%) scale(1.2); }
+      50% { transform: translate(-50%, -50%) scale(1); }
+      75% { transform: translate(-50%, -50%) scale(1.1); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+    .eye.sleepy {
+      background: #6b7280;
+      height: 0.5rem;
+      width: 5.5rem;
+      border-radius: 0.25rem;
+      transform: translate(-50%, -50%) translateY(3rem);
+      animation: sleepy-breathe 2s ease-in-out infinite;
+    }
+    @keyframes sleepy-breathe {
+      0% { transform: translate(-50%, -50%) translateY(3rem) scaleY(1); }
+      50% { transform: translate(-50%, -50%) translateY(3rem) scaleY(0.8); }
+      100% { transform: translate(-50%, -50%) translateY(3rem) scaleY(1); }
+    }
+    .sleep-symbol {
+      position: absolute;
+      top: 15%;
+      right: 15%;
+      font-size: 2.5rem;
+      opacity: 0;
+      animation: sleep-float 3s ease-in-out infinite;
+      z-index: 10;
+      display: none;
+    }
+    @keyframes sleep-float {
+      0% {
+        opacity: 0.8;
+        transform: translateY(0) scale(1);
+      }
+      50% {
+        opacity: 1;
+        transform: translateY(-1rem) scale(1.1);
+      }
+      100% {
+        opacity: 0.8;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .eye.waking {
+      background: #6b7280;
+      height: 2.5rem;
+      width: 5.5rem;
+      transform: translate(-50%, -50%) translateY(3rem);
+      animation: waking-movement 6s ease-in-out forwards;
+    }
+    @keyframes waking-movement {
+      0% {
+        height: 0.5rem;
+        transform: translate(-50%, -50%) translateY(3rem);
+      }
+      20% {
+        height: 2.5rem;
+        transform: translate(-50%, -50%) translateY(3rem);
+      }
+      35% {
+        height: 2.5rem;
+        transform: translate(-50%, -50%) translateY(3rem) translateX(-2rem);
+      }
+      50% {
+        height: 2.5rem;
+        transform: translate(-50%, -50%) translateY(3rem) translateX(2rem);
+      }
+      65% {
+        height: 2.5rem;
+        transform: translate(-50%, -50%) translateY(3rem) translateX(-2rem);
+      }
+      80% {
+        height: 2.5rem;
+        transform: translate(-50%, -50%) translateY(3rem);
+      }
+      100% {
+        height: 2.5rem;
+        transform: translate(-50%, -50%) translateY(0);
+      }
+    }
+    .sleep-symbol.popping {
+      animation: sleep-bubble-pop 2s ease-out forwards;
+    }
+    @keyframes sleep-bubble-pop {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      50% {
+        opacity: 1;
+        transform: translateY(-2rem) scale(1.5);
+      }
+      80% {
+        opacity: 0.5;
+        transform: translateY(-3rem) scale(2);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-4rem) scale(0);
+        display: none;
+      }
+    }
+    .eye.crying {
+      background: #3b82f6;
+      height: 5.5rem;
+      width: 5.5rem;
+      border-radius: 0.5rem;
+      transform: translate(-50%, -50%) translateY(-3rem);
+      animation: crying-tremble 0.5s ease-in-out infinite;
+    }
+    @keyframes crying-tremble {
+      0% { transform: translate(-50%, -50%) translateY(-3rem); }
+      25% { transform: translate(-50%, -50%) translate(0.05rem, -3rem); }
+      50% { transform: translate(-50%, -50%) translate(-0.05rem, -3rem); }
+      75% { transform: translate(-50%, -50%) translate(0.05rem, -3rem); }
+      100% { transform: translate(-50%, -50%) translateY(-3rem); }
+    }
+    .tear {
+      position: absolute;
+      width: 0.5rem;
+      height: 0.8rem;
+      background: #60a5fa;
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      opacity: 0;
+      z-index: 15;
+      animation-play-state: paused;
+    }
+    .tear.active {
+      opacity: 1;
+      animation-play-state: running;
+    }
+    .tear.left {
+      left: 35%;
+      top: 45%;
+    }
+    .tear.right {
+      right: 35%;
+      top: 45%;
+    }
+    .tear.left.active {
+      animation: tear-fall-left 2s ease-in infinite;
+    }
+    .tear.right.active {
+      animation: tear-fall-right 2s ease-in infinite 0.3s;
+    }
+    @keyframes tear-fall-left {
+      0% { transform: translateY(0) scale(0.5); }
+      10% { transform: translateY(0.5rem) scale(1); }
+      90% { transform: translateY(8rem) scale(1); }
+      100% { transform: translateY(9rem) scale(0.8); }
+    }
+    @keyframes tear-fall-right {
+      0% { transform: translateY(0) scale(0.5); }
+      10% { transform: translateY(0.5rem) scale(1); }
+      90% { transform: translateY(8rem) scale(1); }
+      100% { transform: translateY(9rem) scale(0.8); }
+    }
+    .crying-mouth {
+      position: absolute;
+      width: 4rem;
+      height: 4rem;
+      border: 0.2rem solid transparent;
+      bottom: 25%;
+      left: 50%;
+      transform: translateX(-50%);
+      box-sizing: border-box;
+      border-radius: 50%;
+      border-top-color: #374151;
+      opacity: 0;
+      display: none;
+      z-index: 5;
+    }
+    .crying-mouth.active {
+      display: block;
+      animation: crying-mouth-appear 1s ease-in-out forwards;
+    }
+    @keyframes crying-mouth-appear {
+      0% {
+        opacity: 0;
+        width: 2rem;
+        height: 2rem;
+        transform: translateX(-50%) scale(0.5);
+      }
+      100% {
+        opacity: 1;
+        width: 4rem;
+        height: 4rem;
+        transform: translateX(-50%) scale(1);
+      }
+    }
+    .blink {
+      height: 0.25rem !important;
+      transform: scaleY(0.05) translate(-50%, -50%) !important;
+      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    /* --- End Expression Styles --- */
 
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      justify-content: center;
-      align-items: center;
+    /* Controls Grid Styling */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 32rem;
       margin-top: 1rem;
+    }
+    .controls-grid label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem;
+      background: #e5e7eb;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .controls-grid label:hover {
+      background: #d1d5db;
+    }
+    .controls-grid label input[type="checkbox"] {
+      margin-right: 0.5rem;
     }
 
     .control-button {
-      padding: 0.75rem 1.5rem;
+      padding: 0.75rem;
       background: linear-gradient(145deg, #e5e7eb, #d1d5db);
       border: none;
-      border-radius: 0.75rem;
+      border-radius: 0.5rem;
       cursor: pointer;
       transition: all 0.3s ease;
       font-weight: 600;
@@ -158,6 +574,7 @@
       box-shadow: 0 8px 15px -3px rgba(79, 70, 229, 0.4);
     }
 
+    /* Camera Status Styling - kept from previous version as it's useful */
     .camera-status {
       display: inline-flex;
       align-items: center;
@@ -207,9 +624,9 @@
     <div class="card-header">
       <div class="card-title">Robo A.I.</div>
       <div class="status">
-        <div class="camera-status inactive" id="camera-status">
+        <div class="camera-status active" id="camera-status">
           <div class="status-dot"></div>
-          <span id="status-text">Initializing camera...</span>
+          <span id="status-text">Ready for expressions!</span>
         </div>
       </div>
     </div>
@@ -217,14 +634,46 @@
       <div class="eye-box" id="eye-box">
         <div class="eyes">
           <div class="eye-container">
-            <div class="eye" id="left-eye">
-            </div>
+            <div class="eye" id="left-eye"></div>
           </div>
           <div class="eye-container">
-            <div class="eye" id="right-eye">
-            </div>
+            <div class="eye" id="right-eye"></div>
           </div>
         </div>
+        <div class="anger-symbol" id="anger-symbol">💢</div>
+        <div class="sleep-symbol" id="sleep-symbol">💤</div>
+        <div class="sad-mouth" id="sad-mouth"></div>
+        <div class="happy-mouth" id="happy-mouth"></div>
+        <div class="crying-mouth" id="crying-mouth"></div>
+        <div class="tear left" id="tear-left"></div>
+        <div class="tear right" id="tear-right"></div>
+      </div>
+      <div class="controls-grid" id="controls">
+        <label>
+          <input type="checkbox" id="idle-mode" checked>
+          Idle Mode
+        </label>
+        <button class="control-button" data-dir="center">Center</button>
+        <button class="control-button" data-dir="left">Left</button>
+        <button class="control-button" data-dir="right">Right</button>
+        <button class="control-button" data-dir="up">Up</button>
+        <button class="control-button" data-dir="down">Down</button>
+        <button class="control-button" data-dir="up-left">Up-Left</button>
+        <button class="control-button" data-dir="up-right">Up-Right</button>
+        <button class="control-button" data-dir="down-left">Down-Left</button>
+        <button class="control-button" data-dir="down-right">Down-Right</button>
+        <button class="control-button" data-dir="wide-left">Wide Left</button>
+        <button class="control-button" data-dir="wide-right">Wide Right</button>
+        <button class="control-button" data-dir="wide-up">Wide Up</button>
+        <button class="control-button" data-dir="wide-down">Wide Down</button>
+        <button class="control-button" data-expr="happy">😄 Happy</button>
+        <button class="control-button" data-expr="sad">😢 Sad</button>
+        <button class="control-button" data-expr="angry">😠 Angry</button>
+        <button class="control-button" data-expr="dizzy">💫 Dizzy</button>
+        <button class="control-button" data-expr="love">💖 Love</button>
+        <button class="control-button" data-expr="sleepy">😴 Sleepy</button>
+        <button class="control-button" data-expr="waking">😪 Waking Up</button>
+        <button class="control-button" data-expr="crying">ᗒᗣᗕ Crying</button>
       </div>
     </div>
   </div>
@@ -234,20 +683,47 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const videoElement = document.getElementById('video');
-      const leftEye = document.getElementById('left-eye');
-      const rightEye = document.getElementById('right-eye');
-      const cameraStatus = document.getElementById('camera-status');
-      const statusText = document.getElementById('status-text');
+      const LOOK_DIRECTIONS = {
+        center: 'translate(0, 0)',
+        left: 'translateX(-2rem)',
+        right: 'translateX(2rem)',
+        up: 'translateY(-2rem)',
+        down: 'translateY(2rem)',
+        'up-left': 'translate(-2rem, -2rem)',
+        'up-right': 'translate(2rem, -2rem)',
+        'down-left': 'translate(-2rem, 2rem)',
+        'down-right': 'translate(2rem, 2rem)',
+        'wide-left': 'translateX(-3rem)',
+        'wide-right': 'translateX(3rem)',
+        'wide-up': 'translateY(-3rem)',
+        'wide-down': 'translateY(3rem)'
+      };
 
       let isBlinking = false;
+      let lookDirection = 'center';
       let isIdleMode = true;
       let idleTimer = null;
       let isExpressionActive = false;
+      let currentExpression = null;
       let expressionTimeout = null;
-      let faceDetected = false;
-      let lastFaceTime = Date.now();
 
+      const leftEye = document.getElementById('left-eye');
+      const rightEye = document.getElementById('right-eye');
+      const idleModeCheckbox = document.getElementById('idle-mode'); // Renamed to avoid conflict with boolean
+      const angerSymbol = document.getElementById('anger-symbol');
+      const sleepSymbol = document.getElementById('sleep-symbol');
+      const sadMouth = document.getElementById('sad-mouth');
+      const happyMouth = document.getElementById('happy-mouth');
+      const cryingMouth = document.getElementById('crying-mouth');
+      const tearLeft = document.getElementById('tear-left');
+      const tearRight = document.getElementById('tear-right');
+      const controlsGrid = document.getElementById('controls');
+
+      // Camera status elements - not actively used in this version
+      const cameraStatus = document.getElementById('camera-status');
+      const statusText = document.getElementById('status-text');
+
+      // Function to update camera status (kept for consistency, not functional in this version)
       function updateCameraStatus(active, text) {
         cameraStatus.className = `camera-status ${active ? 'active' : 'inactive'}`;
         statusText.textContent = text;
@@ -260,23 +736,17 @@
         }
       }
 
-      function moveEyesToPosition(x, y) {
+      function setEyePosition(direction) {
         if (isExpressionActive) return;
+        const transform = LOOK_DIRECTIONS[direction] || 'translate(0, 0)';
+        const fullTransform = `translate(-50%, -50%) ${transform}`;
+        leftEye.style.transform = fullTransform;
+        rightEye.style.transform = fullTransform;
 
-        // Normalize coordinates to screen space
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
-        
-        // Calculate relative position (-1 to 1)
-        const relX = Math.max(-1, Math.min(1, (x - centerX) / (window.innerWidth * 0.25)));
-        const relY = Math.max(-1, Math.min(1, (y - centerY) / (window.innerHeight * 0.25)));
-
-        // Move entire eyes for tracking effect
-        const eyeX = relX * 2; 
-        const eyeY = relY * 2;
-        
-        leftEye.style.transform = `translate(calc(-50% + ${eyeX}rem), calc(-50% + ${eyeY}rem))`;
-        rightEye.style.transform = `translate(calc(-50% + ${eyeX}rem), calc(-50% + ${eyeY}rem))`;
+        // Update active class for direction buttons
+        document.querySelectorAll('[data-dir]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.dir === direction);
+        });
       }
 
       function resetEyes() {
@@ -286,16 +756,36 @@
         }
         leftEye.className = 'eye';
         rightEye.className = 'eye';
-        leftEye.style.transform = 'translate(-50%, -50%)';
-        rightEye.style.transform = 'translate(-50%, -50%)';
-        
+        angerSymbol.style.opacity = '0';
+        angerSymbol.style.display = 'none';
+        sleepSymbol.style.display = 'none';
+        sleepSymbol.classList.remove('popping'); // Ensure popping class is removed
+        sadMouth.style.display = 'none';
+        sadMouth.classList.remove('active');
+        happyMouth.style.display = 'none';
+        happyMouth.classList.remove('active');
+        cryingMouth.style.display = 'none';
+        cryingMouth.classList.remove('active');
+        tearLeft.classList.remove('active');
+        tearRight.classList.remove('active');
+        currentExpression = null;
         isExpressionActive = false;
+        setEyePosition('center'); // Reset eyes to center
+        
+        // Re-enable direction buttons
+        document.querySelectorAll('[data-dir]').forEach(btn => {
+          btn.disabled = false;
+        });
+        // Remove active state from expression buttons
+        document.querySelectorAll('[data-expr]').forEach(btn => {
+          btn.classList.remove('active');
+        });
       }
 
       function setupBlinking() {
         const blink = () => {
           if (isBlinking || isExpressionActive) {
-            setTimeout(blink, 500);
+            setTimeout(blink, 500); // Check again after a short delay if busy
             return;
           }
           isBlinking = true;
@@ -305,122 +795,181 @@
             leftEye.classList.remove('blink');
             rightEye.classList.remove('blink');
             isBlinking = false;
-          }, 150);
-          setTimeout(blink, Math.random() * 3000 + 2000);
+          }, 150); // Blink duration
+          setTimeout(blink, Math.random() * 3000 + 2000); // Next blink between 2 to 5 seconds
         };
-        setTimeout(blink, Math.random() * 2000 + 1000);
+        setTimeout(blink, Math.random() * 2000 + 1000); // Initial random delay for first blink
       }
 
       function setupIdleMovement() {
         if (!isIdleMode || isExpressionActive) {
           clearIdleTimer();
+          if (!isExpressionActive) setEyePosition('center'); // Ensure eyes return to center if idle mode is off
           return;
         }
-        
+        const directions = Object.keys(LOOK_DIRECTIONS);
         const moveEyes = () => {
-          if (isExpressionActive || faceDetected) {
-            idleTimer = setTimeout(moveEyes, 1000);
+          if (isExpressionActive) {
+            idleTimer = setTimeout(moveEyes, 1000); // Re-check after 1 second if expression is active
             return;
           }
-          
-          // Random eye movement
-          const x = (Math.random() - 0.5) * window.innerWidth;
-          const y = (Math.random() - 0.5) * window.innerHeight;
-          moveEyesToPosition(window.innerWidth/2 + x, window.innerHeight/2 + y);
-          
-          const nextMove = Math.random() * 2000 + 1500;
+          let newDirection;
+          do {
+            newDirection = directions[Math.floor(Math.random() * directions.length)];
+          } while (newDirection === lookDirection && Math.random() > 0.3); // Avoid immediate repeat, with a small chance
+          lookDirection = newDirection;
+          setEyePosition(newDirection);
+          const nextMove = Math.random() * 2000 + 1500; // Next idle move between 1.5 to 3.5 seconds
           idleTimer = setTimeout(moveEyes, nextMove);
         };
-        
-        const initialDelay = Math.random() * 1500 + 1000;
+        const initialDelay = Math.random() * 1500 + 1000; // Initial random delay for first idle move
         idleTimer = setTimeout(moveEyes, initialDelay);
       }
 
-      // Initialize MediaPipe FaceMesh
-      const faceMesh = new FaceMesh({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-      });
+      function setExpression(expression) {
+        resetEyes(); // Reset any current expression or eye position
+        isExpressionActive = true;
+        currentExpression = expression;
+        clearIdleTimer(); // Stop idle movement during expression
 
-      faceMesh.setOptions({
-        maxNumFaces: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
-      });
+        // Set active state on expression button
+        document.querySelectorAll('[data-expr]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.expr === expression);
+        });
 
-      faceMesh.onResults(onResults);
+        // Apply specific styles and animations based on expression
+        if (expression === 'angry') {
+          leftEye.className = 'eye angry left';
+          rightEye.className = 'eye angry right';
+          angerSymbol.style.display = 'block';
+          angerSymbol.style.opacity = '1';
+        } else if (expression === 'sad') {
+          leftEye.className = 'eye sad';
+          rightEye.className = 'eye sad';
+          sadMouth.style.display = 'block';
+          sadMouth.classList.add('active');
+        } else if (expression === 'happy') {
+          leftEye.className = 'eye happy';
+          rightEye.className = 'eye happy';
+          happyMouth.style.display = 'block';
+          happyMouth.classList.add('active');
+        } else if (expression === 'sleepy') {
+          leftEye.className = 'eye sleepy';
+          rightEye.className = 'eye sleepy';
+          sleepSymbol.style.display = 'block';
+          sleepSymbol.style.opacity = '1'; // Ensure symbol is visible
+          sleepSymbol.classList.remove('popping'); // Remove popping if it was previously set
+        } else if (expression === 'waking') {
+          leftEye.className = 'eye waking';
+          rightEye.className = 'eye waking';
+          sleepSymbol.style.display = 'block';
+          sleepSymbol.style.opacity = '1'; // Ensure symbol is visible
+          sleepSymbol.classList.add('popping'); // Trigger popping animation
+          setTimeout(() => {
+            sleepSymbol.classList.remove('popping');
+            sleepSymbol.style.display = 'none'; // Hide after popping animation
+          }, 2000); // Matches sleep-bubble-pop animation duration
+        } else if (expression === 'dizzy') {
+          leftEye.className = 'eye dizzy';
+          rightEye.className = 'eye dizzy';
+        } else if (expression === 'love') {
+          leftEye.className = 'eye love';
+          rightEye.className = 'eye love';
+        } else if (expression === 'crying') {
+          leftEye.className = 'eye crying';
+          rightEye.className = 'eye crying';
+          cryingMouth.style.display = 'block';
+          cryingMouth.classList.add('active');
+          tearLeft.classList.add('active');
+          tearRight.classList.add('active');
+        }
 
-      function onResults(results) {
-        const now = Date.now();
-        
-        if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
-          faceDetected = false;
-          // If no face detected for 2 seconds, enable idle mode
-          if (now - lastFaceTime > 2000 && !isIdleMode) {
-            isIdleMode = true;
-            updateCameraStatus(true, "Face tracking - Idle mode");
+        // Disable direction buttons while an expression is active
+        document.querySelectorAll('[data-dir]').forEach(btn => {
+          btn.disabled = true;
+        });
+
+        // Set a timeout to reset the expression after a period
+        expressionTimeout = setTimeout(() => {
+          resetEyes();
+          // Re-enable direction buttons after expression ends
+          document.querySelectorAll('[data-dir]').forEach(btn => {
+            btn.disabled = false;
+          });
+          if (idleModeCheckbox.checked) { // Check if idle mode was enabled before expression
             setupIdleMovement();
           }
+        }, 8000); // Expression lasts for 8 seconds
+      }
+
+      // Event listener for controls grid
+      controlsGrid.addEventListener('click', function (e) {
+        const exprBtn = e.target.closest('[data-expr]');
+        if (exprBtn) {
+          setExpression(exprBtn.dataset.expr);
           return;
         }
 
-        faceDetected = true;
-        lastFaceTime = now;
-        isIdleMode = false;
-        clearIdleTimer();
-        updateCameraStatus(true, "Face tracking - Active");
-
-        const landmarks = results.multiFaceLandmarks[0];
-        const noseTip = landmarks[4]; // Nose tip landmark
-
-        if (noseTip) {
-          // Mirror x-coordinate for natural interaction
-          const mirroredNoseX = 1 - noseTip.x;
-          const noseY = noseTip.y;
-
-          // Convert to screen coordinates
-          const screenX = mirroredNoseX * window.innerWidth;
-          const screenY = noseY * window.innerHeight;
-
-          moveEyesToPosition(screenX, screenY);
+        const dirBtn = e.target.closest('[data-dir]');
+        if (dirBtn) {
+          const direction = dirBtn.dataset.dir;
+          // If a direction button is clicked, disable idle mode
+          if (direction !== 'center') {
+            isIdleMode = false;
+            idleModeCheckbox.checked = false;
+            clearIdleTimer(); // Stop any ongoing idle movement
+          } else { // If 'Center' button is clicked
+            isIdleMode = false; // Turn off idle mode for explicit centering
+            idleModeCheckbox.checked = false;
+            clearIdleTimer();
+          }
+          if (!isExpressionActive) { // Only move eyes if no expression is active
+            lookDirection = direction;
+            setEyePosition(direction);
+          }
         }
-      }
-
-      // Start camera feed
-      const camera = new Camera(videoElement, {
-        onFrame: async () => {
-          await faceMesh.send({ image: videoElement });
-        },
-        width: 640,
-        height: 480
       });
 
-      camera.start().then(() => {
-        updateCameraStatus(true, "Camera ready - Look around!");
-        setupBlinking();
-        setupIdleMovement();
-      }).catch((error) => {
-        console.error('Camera access failed:', error);
-        updateCameraStatus(false, "Camera access failed");
-        isIdleMode = true; // Fallback to idle mode if camera fails
-        setupBlinking();
-        setupIdleMovement();
+      // Mouse tracking for eye movement when not in idle or expression mode
+      document.getElementById('eye-box').addEventListener('mousemove', function(e) {
+        if (isIdleMode || isExpressionActive) return;
+
+        const rect = this.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const x = e.clientX;
+        const y = e.clientY;
+        let direction = 'center';
+        
+        // Define zones for eye movement
+        if (x < centerX - 100 && y < centerY - 60) direction = 'up-left';
+        else if (x > centerX + 100 && y < centerY - 60) direction = 'up-right';
+        else if (x < centerX - 100 && y > centerY + 60) direction = 'down-left';
+        else if (x > centerX + 100 && y > centerY + 60) direction = 'down-right';
+        else if (x < centerX - 60) direction = 'left';
+        else if (x > centerX + 60) direction = 'right';
+        else if (y < centerY - 60) direction = 'up';
+        else if (y > centerY + 60) direction = 'down';
+        
+        setEyePosition(direction);
       });
 
-      // Handle window resize
-      window.addEventListener('resize', () => {
-        // For simplicity, we'll let CSS handle the scaling here.
-      });
-
-      // Check for face detection timeout periodically
-      setInterval(() => {
-        const now = Date.now();
-        if (faceDetected && now - lastFaceTime > 3000) {
-          faceDetected = false;
-          isIdleMode = true;
-          updateCameraStatus(true, "Face tracking - Idle mode");
+      // Toggle idle mode with checkbox
+      idleModeCheckbox.addEventListener('change', function() {
+        isIdleMode = this.checked;
+        if (isIdleMode) {
           setupIdleMovement();
+        } else {
+          clearIdleTimer();
+          setEyePosition('center'); // Return to center when idle mode is turned off
         }
-      }, 1000);
+      });
+
+      // Initial setup
+      setupBlinking();
+      setupIdleMovement();
+      // Update camera status on load (visual only in this version)
+      updateCameraStatus(true, "Ready for expressions!");
     });
   </script>
 </body>
