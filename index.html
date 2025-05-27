@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Robo A.I. with Expressions</title>
+  <title>Robo A.I. with Auto Face Tracking & Expressions</title>
   <style>
     body {
       margin: 0;
@@ -18,7 +18,7 @@
 
     #video,
     #canvas {
-      display: none; /* Hide video and canvas, not used in this version */
+      display: none; /* Hide video and canvas */
     }
 
     .card {
@@ -74,7 +74,7 @@
       overflow: hidden;
       box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.1),
         0 8px 32px rgba(0, 0, 0, 0.3);
-      cursor: crosshair; /* Added cursor for interactivity indication */
+      /* Cursor removed as direct mouse tracking is replaced by face tracking */
     }
 
     .eyes {
@@ -524,29 +524,11 @@
     /* Controls Grid Styling */
     .controls-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3, 1fr); /* Adjust based on your button count */
       gap: 0.75rem;
       width: 100%;
       max-width: 32rem;
       margin-top: 1rem;
-    }
-    .controls-grid label {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.75rem;
-      background: #e5e7eb;
-      border-radius: 0.5rem;
-      font-weight: 600;
-      color: #374151;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .controls-grid label:hover {
-      background: #d1d5db;
-    }
-    .controls-grid label input[type="checkbox"] {
-      margin-right: 0.5rem;
     }
 
     .control-button {
@@ -574,7 +556,6 @@
       box-shadow: 0 8px 15px -3px rgba(79, 70, 229, 0.4);
     }
 
-    /* Camera Status Styling - kept from previous version as it's useful */
     .camera-status {
       display: inline-flex;
       align-items: center;
@@ -624,9 +605,9 @@
     <div class="card-header">
       <div class="card-title">Robo A.I.</div>
       <div class="status">
-        <div class="camera-status active" id="camera-status">
+        <div class="camera-status inactive" id="camera-status">
           <div class="status-dot"></div>
-          <span id="status-text">Ready for expressions!</span>
+          <span id="status-text">Initializing camera...</span>
         </div>
       </div>
     </div>
@@ -649,23 +630,6 @@
         <div class="tear right" id="tear-right"></div>
       </div>
       <div class="controls-grid" id="controls">
-        <label>
-          <input type="checkbox" id="idle-mode" checked>
-          Idle Mode
-        </label>
-        <button class="control-button" data-dir="center">Center</button>
-        <button class="control-button" data-dir="left">Left</button>
-        <button class="control-button" data-dir="right">Right</button>
-        <button class="control-button" data-dir="up">Up</button>
-        <button class="control-button" data-dir="down">Down</button>
-        <button class="control-button" data-dir="up-left">Up-Left</button>
-        <button class="control-button" data-dir="up-right">Up-Right</button>
-        <button class="control-button" data-dir="down-left">Down-Left</button>
-        <button class="control-button" data-dir="down-right">Down-Right</button>
-        <button class="control-button" data-dir="wide-left">Wide Left</button>
-        <button class="control-button" data-dir="wide-right">Wide Right</button>
-        <button class="control-button" data-dir="wide-up">Wide Up</button>
-        <button class="control-button" data-dir="wide-down">Wide Down</button>
         <button class="control-button" data-expr="happy">😄 Happy</button>
         <button class="control-button" data-expr="sad">😢 Sad</button>
         <button class="control-button" data-expr="angry">😠 Angry</button>
@@ -683,33 +647,19 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const LOOK_DIRECTIONS = {
-        center: 'translate(0, 0)',
-        left: 'translateX(-2rem)',
-        right: 'translateX(2rem)',
-        up: 'translateY(-2rem)',
-        down: 'translateY(2rem)',
-        'up-left': 'translate(-2rem, -2rem)',
-        'up-right': 'translate(2rem, -2rem)',
-        'down-left': 'translate(-2rem, 2rem)',
-        'down-right': 'translate(2rem, 2rem)',
-        'wide-left': 'translateX(-3rem)',
-        'wide-right': 'translateX(3rem)',
-        'wide-up': 'translateY(-3rem)',
-        'wide-down': 'translateY(3rem)'
-      };
+      // Removed LOOK_DIRECTIONS as explicit directional buttons are gone
 
       let isBlinking = false;
-      let lookDirection = 'center';
-      let isIdleMode = true;
+      let isIdleMode = true; // Auto-managed now
       let idleTimer = null;
       let isExpressionActive = false;
       let currentExpression = null;
       let expressionTimeout = null;
+      let faceDetected = false; // Flag for MediaPipe detection
+      let lastFaceTime = Date.now(); // Timestamp for last face detection
 
       const leftEye = document.getElementById('left-eye');
       const rightEye = document.getElementById('right-eye');
-      const idleModeCheckbox = document.getElementById('idle-mode'); // Renamed to avoid conflict with boolean
       const angerSymbol = document.getElementById('anger-symbol');
       const sleepSymbol = document.getElementById('sleep-symbol');
       const sadMouth = document.getElementById('sad-mouth');
@@ -719,11 +669,10 @@
       const tearRight = document.getElementById('tear-right');
       const controlsGrid = document.getElementById('controls');
 
-      // Camera status elements - not actively used in this version
+      // Camera status elements
       const cameraStatus = document.getElementById('camera-status');
       const statusText = document.getElementById('status-text');
 
-      // Function to update camera status (kept for consistency, not functional in this version)
       function updateCameraStatus(active, text) {
         cameraStatus.className = `camera-status ${active ? 'active' : 'inactive'}`;
         statusText.textContent = text;
@@ -736,18 +685,36 @@
         }
       }
 
-      function setEyePosition(direction) {
+      // Updated moveEyesToPosition to directly use normalized screen coordinates
+      function moveEyesToPosition(screenX, screenY) {
         if (isExpressionActive) return;
-        const transform = LOOK_DIRECTIONS[direction] || 'translate(0, 0)';
-        const fullTransform = `translate(-50%, -50%) ${transform}`;
-        leftEye.style.transform = fullTransform;
-        rightEye.style.transform = fullTransform;
 
-        // Update active class for direction buttons
-        document.querySelectorAll('[data-dir]').forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.dir === direction);
-        });
+        // Calculate a normalized position relative to the viewport center for eye movement
+        const viewportCenterX = window.innerWidth / 2;
+        const viewportCenterY = window.innerHeight / 2;
+
+        // Determine how far the target is from the center, normalized to a -1 to 1 range
+        // Adjust the divisor (e.g., window.innerWidth * 0.2) to control sensitivity/range of eye movement
+        const sensitivityX = window.innerWidth * 0.15; // Eyes move across roughly 30% of screen width
+        const sensitivityY = window.innerHeight * 0.15; // Eyes move across roughly 30% of screen height
+
+        const normalizedX = (screenX - viewportCenterX) / sensitivityX;
+        const normalizedY = (screenY - viewportCenterY) / sensitivityY;
+
+        // Clamp values to prevent eyes from moving excessively outside the eye-box
+        const clampedX = Math.max(-1, Math.min(1, normalizedX));
+        const clampedY = Math.max(-1, Math.min(1, normalizedY));
+
+        // Convert normalized values to 'rem' units for eye transform
+        // Adjust the multiplier (e.g., 2rem) to control the physical distance eyes move
+        const eyeMovementRange = 2.5; // Controls how many 'rem' the eyes can move from center
+        const eyeX = clampedX * eyeMovementRange;
+        const eyeY = clampedY * eyeMovementRange;
+
+        leftEye.style.transform = `translate(calc(-50% + ${eyeX}rem), calc(-50% + ${eyeY}rem))`;
+        rightEye.style.transform = `translate(calc(-50% + ${eyeX}rem), calc(-50% + ${eyeY}rem))`;
       }
+
 
       function resetEyes() {
         if (expressionTimeout) {
@@ -759,7 +726,7 @@
         angerSymbol.style.opacity = '0';
         angerSymbol.style.display = 'none';
         sleepSymbol.style.display = 'none';
-        sleepSymbol.classList.remove('popping'); // Ensure popping class is removed
+        sleepSymbol.classList.remove('popping');
         sadMouth.style.display = 'none';
         sadMouth.classList.remove('active');
         happyMouth.style.display = 'none';
@@ -770,22 +737,27 @@
         tearRight.classList.remove('active');
         currentExpression = null;
         isExpressionActive = false;
-        setEyePosition('center'); // Reset eyes to center
         
-        // Re-enable direction buttons
-        document.querySelectorAll('[data-dir]').forEach(btn => {
-          btn.disabled = false;
-        });
-        // Remove active state from expression buttons
+        // Reset eye position to center when expression ends
+        leftEye.style.transform = 'translate(-50%, -50%)';
+        rightEye.style.transform = 'translate(-50%, -50%)';
+
+        // Re-enable expression buttons
         document.querySelectorAll('[data-expr]').forEach(btn => {
           btn.classList.remove('active');
         });
+
+        // If no face is detected, restart idle movement
+        if (!faceDetected) {
+            isIdleMode = true;
+            setupIdleMovement();
+        }
       }
 
       function setupBlinking() {
         const blink = () => {
           if (isBlinking || isExpressionActive) {
-            setTimeout(blink, 500); // Check again after a short delay if busy
+            setTimeout(blink, 500);
             return;
           }
           isBlinking = true;
@@ -795,34 +767,44 @@
             leftEye.classList.remove('blink');
             rightEye.classList.remove('blink');
             isBlinking = false;
-          }, 150); // Blink duration
-          setTimeout(blink, Math.random() * 3000 + 2000); // Next blink between 2 to 5 seconds
+          }, 150);
+          setTimeout(blink, Math.random() * 3000 + 2000);
         };
-        setTimeout(blink, Math.random() * 2000 + 1000); // Initial random delay for first blink
+        setTimeout(blink, Math.random() * 2000 + 1000);
       }
 
       function setupIdleMovement() {
-        if (!isIdleMode || isExpressionActive) {
+        if (!isIdleMode || isExpressionActive || faceDetected) { // Only idle if no expression AND no face
           clearIdleTimer();
-          if (!isExpressionActive) setEyePosition('center'); // Ensure eyes return to center if idle mode is off
           return;
         }
-        const directions = Object.keys(LOOK_DIRECTIONS);
+        
         const moveEyes = () => {
-          if (isExpressionActive) {
-            idleTimer = setTimeout(moveEyes, 1000); // Re-check after 1 second if expression is active
+          if (isExpressionActive || faceDetected) {
+            idleTimer = setTimeout(moveEyes, 1000);
             return;
           }
-          let newDirection;
-          do {
-            newDirection = directions[Math.floor(Math.random() * directions.length)];
-          } while (newDirection === lookDirection && Math.random() > 0.3); // Avoid immediate repeat, with a small chance
-          lookDirection = newDirection;
-          setEyePosition(newDirection);
-          const nextMove = Math.random() * 2000 + 1500; // Next idle move between 1.5 to 3.5 seconds
+          
+          // Random eye movement within the eye-box
+          const eyeBox = document.getElementById('eye-box');
+          const boxRect = eyeBox.getBoundingClientRect();
+          
+          // Generate random target coordinates within a reasonable range of the eye-box
+          // Example: within 40% of the box's width/height from the center
+          const targetX = boxRect.left + boxRect.width * (0.3 + Math.random() * 0.4); // 30% to 70% of box width
+          const targetY = boxRect.top + boxRect.height * (0.3 + Math.random() * 0.4); // 30% to 70% of box height
+
+          moveEyesToPosition(targetX, targetY);
+          
+          const nextMove = Math.random() * 2000 + 1500;
           idleTimer = setTimeout(moveEyes, nextMove);
         };
-        const initialDelay = Math.random() * 1500 + 1000; // Initial random delay for first idle move
+        
+        // Ensure eyes are centered before starting idle movement if they aren't
+        leftEye.style.transform = 'translate(-50%, -50%)';
+        rightEye.style.transform = 'translate(-50%, -50%)';
+
+        const initialDelay = Math.random() * 1500 + 1000;
         idleTimer = setTimeout(moveEyes, initialDelay);
       }
 
@@ -830,7 +812,7 @@
         resetEyes(); // Reset any current expression or eye position
         isExpressionActive = true;
         currentExpression = expression;
-        clearIdleTimer(); // Stop idle movement during expression
+        clearIdleTimer(); // Stop idle movement and face tracking during expression
 
         // Set active state on expression button
         document.querySelectorAll('[data-expr]').forEach(btn => {
@@ -857,18 +839,18 @@
           leftEye.className = 'eye sleepy';
           rightEye.className = 'eye sleepy';
           sleepSymbol.style.display = 'block';
-          sleepSymbol.style.opacity = '1'; // Ensure symbol is visible
-          sleepSymbol.classList.remove('popping'); // Remove popping if it was previously set
+          sleepSymbol.style.opacity = '1';
+          sleepSymbol.classList.remove('popping');
         } else if (expression === 'waking') {
           leftEye.className = 'eye waking';
           rightEye.className = 'eye waking';
           sleepSymbol.style.display = 'block';
-          sleepSymbol.style.opacity = '1'; // Ensure symbol is visible
-          sleepSymbol.classList.add('popping'); // Trigger popping animation
+          sleepSymbol.style.opacity = '1';
+          sleepSymbol.classList.add('popping');
           setTimeout(() => {
             sleepSymbol.classList.remove('popping');
-            sleepSymbol.style.display = 'none'; // Hide after popping animation
-          }, 2000); // Matches sleep-bubble-pop animation duration
+            sleepSymbol.style.display = 'none';
+          }, 2000);
         } else if (expression === 'dizzy') {
           leftEye.className = 'eye dizzy';
           rightEye.className = 'eye dizzy';
@@ -884,92 +866,112 @@
           tearRight.classList.add('active');
         }
 
-        // Disable direction buttons while an expression is active
-        document.querySelectorAll('[data-dir]').forEach(btn => {
-          btn.disabled = true;
-        });
-
         // Set a timeout to reset the expression after a period
         expressionTimeout = setTimeout(() => {
           resetEyes();
-          // Re-enable direction buttons after expression ends
-          document.querySelectorAll('[data-dir]').forEach(btn => {
-            btn.disabled = false;
-          });
-          if (idleModeCheckbox.checked) { // Check if idle mode was enabled before expression
-            setupIdleMovement();
-          }
         }, 8000); // Expression lasts for 8 seconds
       }
 
-      // Event listener for controls grid
+      // Initialize MediaPipe FaceMesh
+      const faceMesh = new FaceMesh({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+      });
+
+      faceMesh.setOptions({
+        maxNumFaces: 1,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      });
+
+      faceMesh.onResults(onResults);
+
+      function onResults(results) {
+        const now = Date.now();
+        
+        if (isExpressionActive) { // Do not process face results if an expression is active
+            return;
+        }
+
+        if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+          faceDetected = false;
+          // If no face detected for 2 seconds, enable idle mode
+          if (now - lastFaceTime > 2000 && !isIdleMode) {
+            isIdleMode = true;
+            updateCameraStatus(true, "Face tracking - Idle mode");
+            setupIdleMovement();
+          }
+          return;
+        }
+
+        faceDetected = true;
+        lastFaceTime = now;
+        isIdleMode = false; // Turn off idle mode when face is detected
+        clearIdleTimer(); // Stop any ongoing idle movement
+        updateCameraStatus(true, "Face tracking - Active");
+
+        const landmarks = results.multiFaceLandmarks[0];
+        const noseTip = landmarks[4]; // Nose tip landmark
+
+        if (noseTip) {
+          // Mirror x-coordinate for natural interaction (webcam often mirrors horizontally)
+          const mirroredNoseX = 1 - noseTip.x;
+          const noseY = noseTip.y;
+
+          // Convert normalized Mediapipe coordinates (0 to 1) to screen coordinates
+          const screenX = mirroredNoseX * window.innerWidth;
+          const screenY = noseY * window.innerHeight;
+
+          moveEyesToPosition(screenX, screenY);
+        }
+      }
+
+      // Start camera feed
+      const camera = new Camera(document.getElementById('video'), {
+        onFrame: async () => {
+          await faceMesh.send({ image: document.getElementById('video') });
+        },
+        width: 640,
+        height: 480
+      });
+
+      camera.start().then(() => {
+        updateCameraStatus(true, "Camera ready - Look at the screen!");
+        setupBlinking();
+        // Initial setup for idle mode if no face is immediately detected
+        setupIdleMovement();
+      }).catch((error) => {
+        console.error('Camera access failed:', error);
+        updateCameraStatus(false, "Camera access failed");
+        isIdleMode = true; // Fallback to idle mode if camera fails
+        setupBlinking();
+        setupIdleMovement();
+      });
+
+      // Event listener for expression buttons
       controlsGrid.addEventListener('click', function (e) {
         const exprBtn = e.target.closest('[data-expr]');
         if (exprBtn) {
           setExpression(exprBtn.dataset.expr);
-          return;
         }
+      });
 
-        const dirBtn = e.target.closest('[data-dir]');
-        if (dirBtn) {
-          const direction = dirBtn.dataset.dir;
-          // If a direction button is clicked, disable idle mode
-          if (direction !== 'center') {
-            isIdleMode = false;
-            idleModeCheckbox.checked = false;
-            clearIdleTimer(); // Stop any ongoing idle movement
-          } else { // If 'Center' button is clicked
-            isIdleMode = false; // Turn off idle mode for explicit centering
-            idleModeCheckbox.checked = false;
-            clearIdleTimer();
-          }
-          if (!isExpressionActive) { // Only move eyes if no expression is active
-            lookDirection = direction;
-            setEyePosition(direction);
+      // Check for face detection timeout periodically
+      setInterval(() => {
+        const now = Date.now();
+        if (faceDetected && now - lastFaceTime > 3000) { // If no face detected for 3 seconds
+          faceDetected = false;
+          // Only re-enter idle mode if no expression is active
+          if (!isExpressionActive) {
+            isIdleMode = true;
+            updateCameraStatus(true, "Face tracking - Idle mode");
+            setupIdleMovement();
           }
         }
-      });
+      }, 1000); // Check every second
 
-      // Mouse tracking for eye movement when not in idle or expression mode
-      document.getElementById('eye-box').addEventListener('mousemove', function(e) {
-        if (isIdleMode || isExpressionActive) return;
-
-        const rect = this.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const x = e.clientX;
-        const y = e.clientY;
-        let direction = 'center';
-        
-        // Define zones for eye movement
-        if (x < centerX - 100 && y < centerY - 60) direction = 'up-left';
-        else if (x > centerX + 100 && y < centerY - 60) direction = 'up-right';
-        else if (x < centerX - 100 && y > centerY + 60) direction = 'down-left';
-        else if (x > centerX + 100 && y > centerY + 60) direction = 'down-right';
-        else if (x < centerX - 60) direction = 'left';
-        else if (x > centerX + 60) direction = 'right';
-        else if (y < centerY - 60) direction = 'up';
-        else if (y > centerY + 60) direction = 'down';
-        
-        setEyePosition(direction);
-      });
-
-      // Toggle idle mode with checkbox
-      idleModeCheckbox.addEventListener('change', function() {
-        isIdleMode = this.checked;
-        if (isIdleMode) {
-          setupIdleMovement();
-        } else {
-          clearIdleTimer();
-          setEyePosition('center'); // Return to center when idle mode is turned off
-        }
-      });
-
-      // Initial setup
+      // Initial call to setup blinking and idle movement (will be overridden by face detection if active)
       setupBlinking();
-      setupIdleMovement();
-      // Update camera status on load (visual only in this version)
-      updateCameraStatus(true, "Ready for expressions!");
+      setupIdleMovement(); // Start in idle mode initially
     });
   </script>
 </body>
