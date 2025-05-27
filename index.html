@@ -409,27 +409,15 @@
         leftPupil.style.transform = `translate(calc(-50% + ${pupilX}rem), calc(-50% + ${pupilY}rem))`;
         rightPupil.style.transform = `translate(calc(-50% + ${pupilX}rem), calc(-50% + ${pupilY}rem))`;
         */
- function moveEyesToPosition(x, y) {
-        if (isExpressionActive) return;
 
-        // Normalize coordinates to screen space
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
-        
-        // Calculate relative position (-1 to 1)
-        // You can make the divisor smaller (e.g., window.innerWidth * 0.2) 
-        // to make the eyes react more to smaller nose movements.
-        const relX = Math.max(-1, Math.min(1, (x - centerX) / (window.innerWidth * 0.25))); // ছিল 0.3
-        const relY = Math.max(-1, Math.min(1, (y - centerY) / (window.innerHeight * 0.25))); // ছিল 0.3
+        // Move entire eyes for tracking effect
+        const eyeX = relX * 1.2;
+        const eyeY = relY * 1.2;
+        
+        leftEye.style.transform = `translate(calc(-50% + ${eyeX}rem), calc(-50% + ${eyeY}rem))`;
+        rightEye.style.transform = `translate(calc(-50% + ${eyeX}rem), calc(-50% + ${eyeY}rem))`;
+      }
 
-        // Move entire eyes for tracking effect
-        // Increase the multiplier (e.g., 2.0 or 2.5) to make the eyes move further.
-        const eyeX = relX * 2.0; // ছিল 1.2
-        const eyeY = relY * 2.0; // ছিল 1.2
-        
-        leftEye.style.transform = `translate(calc(-50% + ${eyeX}rem), calc(-50% + ${eyeY}rem))`;
-        rightEye.style.transform = `translate(calc(-50% + ${eyeX}rem), calc(-50% + ${eyeY}rem))`;
-      }
       function resetEyes() {
         if (expressionTimeout) {
           clearTimeout(expressionTimeout);
