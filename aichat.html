@@ -13,7 +13,7 @@
 
         html, body {
             height: 100%;
-            overflow: hidden;
+            overflow: hidden; /* Prevent body scroll */
         }
 
         body {
@@ -25,7 +25,7 @@
             align-items: center;
             -webkit-text-size-adjust: 100%;
             -webkit-font-smoothing: antialiased;
-            position: fixed;
+            position: fixed; /* Fix body to prevent layout shift */
             top: 0;
             left: 0;
             right: 0;
@@ -34,7 +34,7 @@
 
         .app-container {
             height: 100vh;
-            height: 100dvh;
+            height: 100dvh; /* Use dvh for mobile viewport height */
             width: 100%;
             max-width: 600px;
             margin: 0 auto;
@@ -43,8 +43,9 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow: hidden; /* Hide overflow from rounded corners */
             position: relative;
+            z-index: 1; /* Ensure it's above the modal when active */
         }
 
         .header {
@@ -145,9 +146,9 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow: hidden; /* Important for flex-child scrolling */
             background: #F0F8FF;
-            min-height: 0;
+            min-height: 0; /* Allow flex item to shrink below content height */
         }
 
         .chat-messages {
@@ -157,8 +158,8 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            padding-right: 15px;
-            min-height: 0;
+            padding-right: 15px; /* Account for scrollbar width */
+            min-height: 0; /* Allow flex item to shrink */
         }
 
         .message {
@@ -241,27 +242,34 @@
             position: relative;
             z-index: 1;
             flex-shrink: 0;
+            /* Adjust padding-bottom for iOS safe area if needed */
+            padding-bottom: calc(15px + env(keyboard-inset-bottom, 0px)); 
+            /* This is the key for mobile keyboards */
+            padding-bottom: calc(15px + constant(safe-area-inset-bottom, 0px));
+            padding-bottom: calc(15px + env(safe-area-inset-bottom, 0px));
+            box-sizing: content-box; /* Include padding in height calculation */
         }
 
         .input-wrapper {
             display: flex;
-            align-items: flex-end;
+            align-items: flex-end; /* Align buttons and textarea bottom */
             gap: 10px;
         }
 
         .message-input {
             flex: 1;
             min-height: 48px;
-            max-height: 100px;
+            max-height: 100px; /* Limit height of textarea */
             padding: 12px 16px;
             border: 2px solid #ADD8E6;
             border-radius: 12px;
             font-size: 16px;
-            resize: none;
+            resize: none; /* Disable manual resize */
             font-family: inherit;
             line-height: 1.5;
             background: #F0F8FF;
             color: #333333;
+            overflow-y: auto; /* Enable scrolling for long text */
         }
 
         .message-input::placeholder {
@@ -560,6 +568,7 @@
             .btn { padding: 8px 10px; font-size: 14px; }
         }
 
+        /* Fallback for browsers that don't support dvh */
         @supports not (height: 100dvh) {
             .app-container, .modal { height: 100vh; }
         }
@@ -743,7 +752,7 @@
         const state = {
             ttsEnabled: true,
             apiKey: localStorage.getItem('apiKey') || '',
-            systemPrompt: localStorage.getItem('systemPrompt') || '',
+            systemPrompt: localStorage.getItem('systemPrompt') || 'You are Pal, a very friendly, cheerful, and patient AI assistant for kids. Explain things simply and use fun examples. Never use emojis or action descriptions (like *smiles*).',
             chatHistory: JSON.parse(localStorage.getItem('chatHistory') || '[]'),
             isListening: false,
             recognition: null,
@@ -782,6 +791,7 @@
 
             addMessage(text, 'user');
             dom.messageInput.value = '';
+            adjustTextareaHeight(dom.messageInput); // Reset textarea height after sending
             
             const typingIndicator = document.createElement('div');
             typingIndicator.className = 'typing-indicator';
@@ -797,6 +807,12 @@
             typingIndicator.scrollIntoView({ behavior: 'smooth' });
 
             try {
+                const messagesToSend = [
+                    { role: 'system', content: state.systemPrompt },
+                    ...state.chatHistory,
+                    { role: 'user', content: text }
+                ];
+
                 const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                     method: 'POST',
                     headers: {
@@ -805,16 +821,20 @@
                     },
                     body: JSON.stringify({
                         model: 'deepseek/deepseek-chat-v3-0324:free',
-                        messages: [
-                            { role: 'system', content: state.systemPrompt },
-                            ...state.chatHistory,
-                            { role: 'user', content: text }
-                        ]
+                        messages: messagesToSend
                     })
                 });
 
                 const data = await response.json();
-                const aiResponse = data.choices[0].message.content;
+                let aiResponse = "I'm sorry, I couldn't get a response. Please check your API key or try again.";
+                if (data && data.choices && data.choices.length > 0 && data.choices[0].message) {
+                    aiResponse = data.choices[0].message.content;
+                } else if (data && data.error) {
+                    aiResponse = `Oops! There was an error: ${data.error.message || 'Unknown error.'}`;
+                    if (data.error.code === 'authentication_required' || data.error.code === 'invalid_api_key') {
+                        aiResponse += " Please make sure your API key is correct in the settings.";
+                    }
+                }
                 
                 state.chatHistory.push({ role: 'user', content: text });
                 state.chatHistory.push({ role: 'assistant', content: aiResponse });
@@ -829,7 +849,7 @@
             } catch (error) {
                 console.error('API Error:', error);
                 typingIndicator.remove();
-                addMessage("Oops! Something went wrong. Please try again!", 'system');
+                addMessage("Oops! Something went wrong while talking to Pal. Check your internet or API key in settings!", 'system');
             }
         }
 
@@ -839,36 +859,67 @@
                 state.recognition = new SpeechRecognition();
                 state.recognition.continuous = false;
                 state.recognition.interimResults = false;
+                state.recognition.lang = 'en-US'; // Set recognition language
 
                 state.recognition.onstart = () => {
                     dom.micBtn.classList.add('listening');
+                    state.isListening = true;
+                    console.log('Speech recognition started');
                 };
 
                 state.recognition.onresult = (event) => {
                     const transcript = event.results[0][0].transcript;
                     dom.messageInput.value = transcript;
+                    adjustTextareaHeight(dom.messageInput); // Adjust height for recognized text
+                    console.log('Speech recognition result:', transcript);
                 };
 
                 state.recognition.onerror = (event) => {
                     console.error('Speech recognition error:', event.error);
+                    if (event.error === 'no-speech') {
+                        addMessage("Didn't hear anything! Try speaking louder or clearer.", 'system');
+                    } else if (event.error === 'not-allowed') {
+                        addMessage("Pal needs microphone permission to listen. Please allow it in your browser settings!", 'system');
+                    }
                 };
 
                 state.recognition.onend = () => {
                     dom.micBtn.classList.remove('listening');
+                    state.isListening = false;
+                    console.log('Speech recognition ended');
                 };
             } else {
                 dom.micBtn.disabled = true;
-                dom.micBtn.title = 'Speech recognition not supported';
+                dom.micBtn.title = 'Speech recognition not supported on this browser';
+                console.warn('Speech recognition not supported in this browser.');
             }
         }
 
         function loadChatHistory() {
             dom.chatMessages.innerHTML = '';
-            state.chatHistory.forEach(msg => {
-                if (msg.role !== 'system') {
-                    addMessage(msg.content, msg.role);
-                }
-            });
+            if (state.chatHistory.length === 0) {
+                addMessage("Hi there! I'm Pal, your friendly AI. Ask me anything! For example, 'What's your favorite color?' or 'Tell me a funny joke!'", 'assistant');
+            } else {
+                state.chatHistory.forEach(msg => {
+                    // Only display user and assistant messages from history
+                    if (msg.role === 'user' || msg.role === 'assistant') {
+                        addMessage(msg.content, msg.role);
+                    }
+                });
+            }
+        }
+
+        function adjustTextareaHeight(textarea) {
+            textarea.style.height = 'auto'; // Reset height to recalculate
+            textarea.style.height = textarea.scrollHeight + 'px'; // Set to scroll height
+            // Ensure it doesn't exceed max-height defined in CSS
+            const maxHeight = parseInt(window.getComputedStyle(textarea).maxHeight);
+            if (textarea.scrollHeight > maxHeight) {
+                textarea.style.overflowY = 'auto';
+            } else {
+                textarea.style.overflowY = 'hidden';
+            }
+            dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight; // Scroll to bottom
         }
 
         // Event Listeners
@@ -879,14 +930,21 @@
 
         dom.messageInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
+                e.preventDefault(); // Prevent new line
                 dom.sendBtn.click();
             }
         });
 
+        dom.messageInput.addEventListener('input', () => adjustTextareaHeight(dom.messageInput));
+
+
         dom.micBtn.addEventListener('click', () => {
-            if (state.recognition && !state.isListening) {
-                state.recognition.start();
+            if (state.recognition) {
+                if (state.isListening) {
+                    state.recognition.stop();
+                } else {
+                    state.recognition.start();
+                }
             }
         });
 
@@ -894,6 +952,9 @@
             state.ttsEnabled = !state.ttsEnabled;
             updateTTSToggle();
             localStorage.setItem('ttsEnabled', state.ttsEnabled);
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel(); // Stop current speech if TTS is toggled off
+            }
         });
 
         dom.settingsBtn.addEventListener('click', () => {
@@ -912,22 +973,45 @@
             localStorage.setItem('apiKey', state.apiKey);
             localStorage.setItem('systemPrompt', state.systemPrompt);
             dom.settingsModal.classList.add('hidden');
+            // Re-add initial assistant message if chat history is empty after saving settings
+            if (state.chatHistory.length === 0) {
+                 addMessage("Hi there! I'm Pal, your friendly AI. Ask me anything! For example, 'What's your favorite color?' or 'Tell me a funny joke!'", 'assistant');
+            }
         });
 
         dom.clearHistoryBtn.addEventListener('click', () => {
             state.chatHistory = [];
             localStorage.removeItem('chatHistory');
-            loadChatHistory();
+            loadChatHistory(); // Reload history, which will add the default welcome message
+            addMessage("Chat history cleared! We can start fresh now!", 'system');
         });
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            state.ttsEnabled = localStorage.getItem('ttsEnabled') === 'true';
+            state.ttsEnabled = localStorage.getItem('ttsEnabled') === 'true'; // Ensure boolean conversion
             updateTTSToggle();
             loadChatHistory();
             initSpeechRecognition();
             state.tts.initialize();
+            adjustTextareaHeight(dom.messageInput); // Adjust initial textarea height
         });
+
+        // Prevent layout shift on iOS when keyboard appears (though `dvh` and `keyboard-inset-bottom` help)
+        // This is a common issue and sometimes requires more complex solutions.
+        // For simple cases, `dvh` and `padding-bottom` with `env(keyboard-inset-bottom)` can work.
+        // If issues persist, consider using the Visual Viewport API for more dynamic adjustments.
+        window.addEventListener('resize', () => {
+            dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
+        });
+
+        // For specific cases where `dvh` or `keyboard-inset-bottom` might not be fully supported
+        // or for more precise control, one might listen for `visualViewport` changes:
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                // This adjusts the scroll to the bottom when the keyboard changes size.
+                dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
+            });
+        }
     </script>
 </body>
 </html>
