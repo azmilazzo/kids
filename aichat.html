@@ -752,7 +752,7 @@
         const state = {
             ttsEnabled: true,
             apiKey: localStorage.getItem('apiKey') || '',
-            systemPrompt: localStorage.getItem('systemPrompt') || 'You are Pal, a very friendly, cheerful, and patient AI assistant for kids. Explain things simply and use fun examples. Never use emojis or action descriptions (like *smiles*).',
+            systemPrompt: localStorage.getItem('systemPrompt') || 'You are Luna, a very friendly, cheerful, and patient AI assistant for kids. Explain things simply and use fun examples. Explain in simple sentences. Never use emojis or action descriptions (like *smiles*).',
             chatHistory: JSON.parse(localStorage.getItem('chatHistory') || '[]'),
             isListening: false,
             recognition: null,
@@ -849,7 +849,7 @@
             } catch (error) {
                 console.error('API Error:', error);
                 typingIndicator.remove();
-                addMessage("Oops! Something went wrong while talking to Pal. Check your internet or API key in settings!", 'system');
+                addMessage("Oops! Something went wrong while talking to Luna. Check your internet or API key in settings!", 'system');
             }
         }
 
@@ -902,7 +902,7 @@
         function loadChatHistory() {
             dom.chatMessages.innerHTML = '';
             if (state.chatHistory.length === 0) {
-                addMessage("Hi there! I'm Pal, your friendly AI. Ask me anything! For example, 'What's your favorite color?' or 'Tell me a funny joke!'", 'assistant');
+                addMessage("Hi there! I'm Luna, your friendly AI. Ask me anything! For example, 'What's your favorite color?' or 'Tell me a funny joke!'", 'assistant');
             } else {
                 state.chatHistory.forEach(msg => {
                     // Only display user and assistant messages from history
@@ -1004,7 +1004,7 @@
             dom.settingsModal.classList.add('hidden');
             // Re-add initial assistant message if chat history is empty after saving settings
             if (state.chatHistory.length === 0) {
-                 addMessage("Hi there! I'm Pal, your friendly AI. Ask me anything! For example, 'What's your favorite color?' or 'Tell me a funny joke!'", 'assistant');
+                 addMessage("Hi there! I'm Luna, your friendly AI. Ask me anything! For example, 'What's your favorite color?' or 'Tell me a funny joke!'", 'assistant');
             }
         });
 
