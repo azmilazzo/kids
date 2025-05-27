@@ -74,7 +74,6 @@
       overflow: hidden;
       box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.1),
         0 8px 32px rgba(0, 0, 0, 0.3);
-      /* Cursor removed as direct mouse tracking is replaced by face tracking */
     }
 
     .eyes {
@@ -514,12 +513,16 @@
         transform: translateX(-50%) scale(1);
       }
     }
+
+    /* *************************************************** */
+    /* MODIFIED BLINK CSS FOR SMOOTHER MOBILE PERFORMANCE */
+    /* *************************************************** */
     .blink {
-      height: 0.25rem !important;
-      transform: scaleY(0.05) translate(-50%, -50%) !important;
+      /* Keep the original centering transform */
+      transform: translate(-50%, -50%) scaleY(0.05) !important;
+      /* Apply transition only to transform property */
       transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
-    /* --- End Expression Styles --- */
 
     /* Controls Grid Styling */
     .controls-grid {
@@ -647,8 +650,6 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Removed LOOK_DIRECTIONS as explicit directional buttons are gone
-
       let isBlinking = false;
       let isIdleMode = true; // Auto-managed now
       let idleTimer = null;
@@ -685,44 +686,43 @@
         }
       }
 
-      // Updated moveEyesToPosition to directly use normalized screen coordinates
       function moveEyesToPosition(screenX, screenY) {
         if (isExpressionActive) return;
 
-        // Calculate a normalized position relative to the viewport center for eye movement
         const viewportCenterX = window.innerWidth / 2;
         const viewportCenterY = window.innerHeight / 2;
 
-        // Determine how far the target is from the center, normalized to a -1 to 1 range
-        // Adjust the divisor (e.g., window.innerWidth * 0.2) to control sensitivity/range of eye movement
-        const sensitivityX = window.innerWidth * 0.15; // Eyes move across roughly 30% of screen width
-        const sensitivityY = window.innerHeight * 0.15; // Eyes move across roughly 30% of screen height
+        const sensitivityX = window.innerWidth * 0.15;
+        const sensitivityY = window.innerHeight * 0.15;
 
         const normalizedX = (screenX - viewportCenterX) / sensitivityX;
         const normalizedY = (screenY - viewportCenterY) / sensitivityY;
 
-        // Clamp values to prevent eyes from moving excessively outside the eye-box
         const clampedX = Math.max(-1, Math.min(1, normalizedX));
         const clampedY = Math.max(-1, Math.min(1, normalizedY));
 
-        // Convert normalized values to 'rem' units for eye transform
-        // Adjust the multiplier (e.g., 2rem) to control the physical distance eyes move
-        const eyeMovementRange = 2.5; // Controls how many 'rem' the eyes can move from center
+        const eyeMovementRange = 2.5;
         const eyeX = clampedX * eyeMovementRange;
         const eyeY = clampedY * eyeMovementRange;
 
-        leftEye.style.transform = `translate(calc(-50% + ${eyeX}rem), calc(-50% + ${eyeY}rem))`;
-        rightEye.style.transform = `translate(calc(-50% + ${eyeX}rem), calc(-50% + ${eyeY}rem))`;
+        // Ensure current transformation is preserved if additional transforms are present (like expressions)
+        // However, for blinking, we will apply the specific `scaleY` on top of the base transform.
+        const baseTransform = `translate(-50%, -50%)`;
+        leftEye.style.transform = `${baseTransform} translateX(${eyeX}rem) translateY(${eyeY}rem)`;
+        rightEye.style.transform = `${baseTransform} translateX(${eyeX}rem) translateY(${eyeY}rem)`;
       }
-
 
       function resetEyes() {
         if (expressionTimeout) {
           clearTimeout(expressionTimeout);
           expressionTimeout = null;
         }
+        // Ensure that base transform is always set for normal eye state
         leftEye.className = 'eye';
         rightEye.className = 'eye';
+        leftEye.style.transform = 'translate(-50%, -50%)'; // Reset to default center position
+        rightEye.style.transform = 'translate(-50%, -50%)';
+
         angerSymbol.style.opacity = '0';
         angerSymbol.style.display = 'none';
         sleepSymbol.style.display = 'none';
@@ -738,16 +738,6 @@
         currentExpression = null;
         isExpressionActive = false;
         
-        // Reset eye position to center when expression ends
-        leftEye.style.transform = 'translate(-50%, -50%)';
-        rightEye.style.transform = 'translate(-50%, -50%)';
-
-        // Re-enable expression buttons
-        document.querySelectorAll('[data-expr]').forEach(btn => {
-          btn.classList.remove('active');
-        });
-
-        // If no face is detected, restart idle movement
         if (!faceDetected) {
             isIdleMode = true;
             setupIdleMovement();
@@ -761,11 +751,20 @@
             return;
           }
           isBlinking = true;
+          
+          // Store current transform to restore after blink
+          const leftEyeTransform = leftEye.style.transform;
+          const rightEyeTransform = rightEye.style.transform;
+
           leftEye.classList.add('blink');
           rightEye.classList.add('blink');
+
           setTimeout(() => {
             leftEye.classList.remove('blink');
             rightEye.classList.remove('blink');
+            // Restore original transform if it wasn't the default center one
+            leftEye.style.transform = leftEyeTransform;
+            rightEye.style.transform = rightEyeTransform;
             isBlinking = false;
           }, 150);
           setTimeout(blink, Math.random() * 3000 + 2000);
@@ -774,7 +773,7 @@
       }
 
       function setupIdleMovement() {
-        if (!isIdleMode || isExpressionActive || faceDetected) { // Only idle if no expression AND no face
+        if (!isIdleMode || isExpressionActive || faceDetected) {
           clearIdleTimer();
           return;
         }
@@ -785,14 +784,11 @@
             return;
           }
           
-          // Random eye movement within the eye-box
           const eyeBox = document.getElementById('eye-box');
           const boxRect = eyeBox.getBoundingClientRect();
           
-          // Generate random target coordinates within a reasonable range of the eye-box
-          // Example: within 40% of the box's width/height from the center
-          const targetX = boxRect.left + boxRect.width * (0.3 + Math.random() * 0.4); // 30% to 70% of box width
-          const targetY = boxRect.top + boxRect.height * (0.3 + Math.random() * 0.4); // 30% to 70% of box height
+          const targetX = boxRect.left + boxRect.width * (0.3 + Math.random() * 0.4);
+          const targetY = boxRect.top + boxRect.height * (0.3 + Math.random() * 0.4);
 
           moveEyesToPosition(targetX, targetY);
           
@@ -809,17 +805,15 @@
       }
 
       function setExpression(expression) {
-        resetEyes(); // Reset any current expression or eye position
+        resetEyes();
         isExpressionActive = true;
         currentExpression = expression;
-        clearIdleTimer(); // Stop idle movement and face tracking during expression
+        clearIdleTimer();
 
-        // Set active state on expression button
         document.querySelectorAll('[data-expr]').forEach(btn => {
           btn.classList.toggle('active', btn.dataset.expr === expression);
         });
 
-        // Apply specific styles and animations based on expression
         if (expression === 'angry') {
           leftEye.className = 'eye angry left';
           rightEye.className = 'eye angry right';
@@ -866,13 +860,11 @@
           tearRight.classList.add('active');
         }
 
-        // Set a timeout to reset the expression after a period
         expressionTimeout = setTimeout(() => {
           resetEyes();
-        }, 8000); // Expression lasts for 8 seconds
+        }, 8000);
       }
 
-      // Initialize MediaPipe FaceMesh
       const faceMesh = new FaceMesh({
         locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
       });
@@ -888,13 +880,12 @@
       function onResults(results) {
         const now = Date.now();
         
-        if (isExpressionActive) { // Do not process face results if an expression is active
+        if (isExpressionActive) {
             return;
         }
 
         if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
           faceDetected = false;
-          // If no face detected for 2 seconds, enable idle mode
           if (now - lastFaceTime > 2000 && !isIdleMode) {
             isIdleMode = true;
             updateCameraStatus(true, "Face tracking - Idle mode");
@@ -905,19 +896,17 @@
 
         faceDetected = true;
         lastFaceTime = now;
-        isIdleMode = false; // Turn off idle mode when face is detected
-        clearIdleTimer(); // Stop any ongoing idle movement
+        isIdleMode = false;
+        clearIdleTimer();
         updateCameraStatus(true, "Face tracking - Active");
 
         const landmarks = results.multiFaceLandmarks[0];
-        const noseTip = landmarks[4]; // Nose tip landmark
+        const noseTip = landmarks[4];
 
         if (noseTip) {
-          // Mirror x-coordinate for natural interaction (webcam often mirrors horizontally)
           const mirroredNoseX = 1 - noseTip.x;
           const noseY = noseTip.y;
 
-          // Convert normalized Mediapipe coordinates (0 to 1) to screen coordinates
           const screenX = mirroredNoseX * window.innerWidth;
           const screenY = noseY * window.innerHeight;
 
@@ -925,7 +914,6 @@
         }
       }
 
-      // Start camera feed
       const camera = new Camera(document.getElementById('video'), {
         onFrame: async () => {
           await faceMesh.send({ image: document.getElementById('video') });
@@ -937,17 +925,15 @@
       camera.start().then(() => {
         updateCameraStatus(true, "Camera ready - Look at the screen!");
         setupBlinking();
-        // Initial setup for idle mode if no face is immediately detected
         setupIdleMovement();
       }).catch((error) => {
         console.error('Camera access failed:', error);
         updateCameraStatus(false, "Camera access failed");
-        isIdleMode = true; // Fallback to idle mode if camera fails
+        isIdleMode = true;
         setupBlinking();
         setupIdleMovement();
       });
 
-      // Event listener for expression buttons
       controlsGrid.addEventListener('click', function (e) {
         const exprBtn = e.target.closest('[data-expr]');
         if (exprBtn) {
@@ -955,23 +941,20 @@
         }
       });
 
-      // Check for face detection timeout periodically
       setInterval(() => {
         const now = Date.now();
-        if (faceDetected && now - lastFaceTime > 3000) { // If no face detected for 3 seconds
+        if (faceDetected && now - lastFaceTime > 3000) {
           faceDetected = false;
-          // Only re-enter idle mode if no expression is active
           if (!isExpressionActive) {
             isIdleMode = true;
             updateCameraStatus(true, "Face tracking - Idle mode");
             setupIdleMovement();
           }
         }
-      }, 1000); // Check every second
+      }, 1000);
 
-      // Initial call to setup blinking and idle movement (will be overridden by face detection if active)
       setupBlinking();
-      setupIdleMovement(); // Start in idle mode initially
+      setupIdleMovement();
     });
   </script>
 </body>
