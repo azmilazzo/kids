@@ -398,8 +398,8 @@
         const centerY = window.innerHeight / 2;
         
         // Calculate relative position (-1 to 1)
-        const relX = Math.max(-1, Math.min(1, (x - centerX) / (window.innerWidth * 0.3)));
-        const relY = Math.max(-1, Math.min(1, (y - centerY) / (window.innerHeight * 0.3)));
+        const relX = Math.max(-1, Math.min(1, (x - centerX) / (window.innerWidth * 0.25)));
+        const relY = Math.max(-1, Math.min(1, (y - centerY) / (window.innerHeight * 0.25)));
 
         /* Pupil movement - keeping for future use
         // Move pupils within their range
@@ -411,8 +411,8 @@
         */
 
         // Move entire eyes for tracking effect
-        const eyeX = relX * 1.2;
-        const eyeY = relY * 1.2;
+        const eyeX = relX * 2;
+        const eyeY = relY * 2;
         
         leftEye.style.transform = `translate(calc(-50% + ${eyeX}rem), calc(-50% + ${eyeY}rem))`;
         rightEye.style.transform = `translate(calc(-50% + ${eyeX}rem), calc(-50% + ${eyeY}rem))`;
