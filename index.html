@@ -79,24 +79,24 @@
 
     .eyes {
       display: flex;
-      /* Use relative units for gap, e.g., vw or em */
-      gap: 10vw; /* Adjust gap based on viewport width */
+      /* Increased gap for better separation at larger sizes */
+      gap: 15vw;
       max-gap: 4rem; /* Set a maximum gap for larger screens */
       position: relative;
-      /* Ensure eyes scale down without overflowing their container */
-      transform: scale(0.7); /* Start with a slightly smaller scale for initial fit */
+      /* Slightly larger initial scale for mobile */
+      transform: scale(0.8);
     }
 
     @media (min-width: 600px) {
-      /* Adjust scale for larger screens if needed */
+      /* Adjust scale for larger screens to revert to original size */
       .eyes {
         transform: scale(1);
       }
     }
 
     .eye-container {
-      /* Use relative units for eye container, e.g., vw or percentage of parent */
-      width: 20vw; /* Example: 20% of viewport width */
+      /* Increased width relative to viewport to make eyes bigger */
+      width: 25vw;
       max-width: 7rem; /* Retain max-width for larger screens */
       height: auto; /* Allow height to adjust */
       aspect-ratio: 1 / 1; /* Maintain aspect ratio */
@@ -116,10 +116,6 @@
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 0 20px rgba(59, 130, 246, 0.4),
         inset 0 2px 4px rgba(255, 255, 255, 0.2);
-    }
-
-    .pupil {
-      display: none;
     }
 
     .blink {
@@ -413,7 +409,6 @@
       // Handle window resize
       window.addEventListener('resize', () => {
         // For simplicity, we'll let CSS handle the scaling here.
-        // If camera stream itself needs adjustment, you might re-start it.
       });
 
       // Check for face detection timeout periodically
