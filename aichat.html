@@ -601,7 +601,7 @@
                         rows="1"
                     ></textarea>
                     <div class="input-area-buttons">
-                        <button id="micBtn" class="mic-btn" title="Speak to type">🎤</button>
+                        <button id="micBtn" class="mic-btn" title="Hold to speak">🎤</button>
                         <button id="sendBtn" class="send-btn" title="Send message">➤</button>
                     </div>
                 </div>
@@ -887,6 +887,10 @@
                     dom.micBtn.classList.remove('listening');
                     state.isListening = false;
                     console.log('Speech recognition ended');
+                    const recognizedText = dom.messageInput.value.trim();
+                    if (recognizedText) {
+                        handleUserInput(recognizedText);
+                    }
                 };
             } else {
                 dom.micBtn.disabled = true;
@@ -937,14 +941,39 @@
 
         dom.messageInput.addEventListener('input', () => adjustTextareaHeight(dom.messageInput));
 
+        // Mic Button: Hold to talk, release to send
+        dom.micBtn.addEventListener('mousedown', () => {
+            if (state.recognition && !state.isListening) {
+                dom.messageInput.value = ''; // Clear input on mic press
+                adjustTextareaHeight(dom.messageInput); // Reset textarea height
+                state.recognition.start();
+            }
+        });
 
-        dom.micBtn.addEventListener('click', () => {
-            if (state.recognition) {
-                if (state.isListening) {
-                    state.recognition.stop();
-                } else {
-                    state.recognition.start();
-                }
+        dom.micBtn.addEventListener('mouseup', () => {
+            if (state.recognition && state.isListening) {
+                state.recognition.stop();
+                // Speech recognition onresult will populate messageInput
+                // and onend will be triggered. We'll send the message on onend.
+            }
+        });
+
+        // For mobile/touch devices
+        dom.micBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent scrolling on long press
+            if (state.recognition && !state.isListening) {
+                dom.messageInput.value = ''; // Clear input on mic press
+                adjustTextareaHeight(dom.messageInput); // Reset textarea height
+                state.recognition.start();
+            }
+        });
+
+        dom.micBtn.addEventListener('touchend', (e) => {
+            e.preventDefault(); // Prevent tap from also triggering click if both are present
+            if (state.recognition && state.isListening) {
+                state.recognition.stop();
+                // Speech recognition onresult will populate messageInput
+                // and onend will be triggered. We'll send the message on onend.
             }
         });
 
