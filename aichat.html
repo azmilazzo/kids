@@ -708,17 +708,29 @@
             
                     const utterance = new SpeechSynthesisUtterance(text);
                     const preferredVoices = [
-                        'Google US English', 'Microsoft Zira - English (United States)',
-                        'Microsoft David - English (United States)', 'Samantha', 'Alex'
+                        'Microsoft Zira - English (United States)',  // Windows female
+                        'Google US English',                         // Chrome female
+                        'Samantha',                                  // macOS female
+                        'Karen',                                     // Australian female
+                        'Serena'                                     // iOS female
                     ];
                     
+                    // Find first available female voice
                     let selectedVoice = this.voices.find(voice => 
-                        preferredVoices.includes(voice.name) && voice.lang.startsWith('en-')
-                    ) || this.voices[0];
+                        preferredVoices.includes(voice.name) && 
+                        voice.lang.startsWith('en-')
+                    );
+
+                    // Fallback to first available English voice
+                    if (!selectedVoice) {
+                        selectedVoice = this.voices.find(voice => 
+                            voice.lang.startsWith('en-')
+                        ) || this.voices[0];
+                    }
 
                     utterance.voice = selectedVoice;
                     utterance.rate = 0.95;
-                    utterance.pitch = 1.05;
+                    utterance.pitch = 1.1;  // Slightly higher pitch for friendliness
                     utterance.volume = 0.9;
 
                     utterance.onend = resolve;
