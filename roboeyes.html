@@ -2,122 +2,164 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Robo A.I. with Auto Face Tracking & Expressions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    /* Basic Reset & Body Styling */
     body {
       margin: 0;
       min-height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      font-family: system-ui, sans-serif;
+      background: linear-gradient(to top right, #a7f3d0, #bfdbfe); /* Soft, playful gradient background */
+      font-family: 'Inter', system-ui, sans-serif; /* Using Inter font */
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 1rem;
+      padding: 1rem; /* Reduced padding for mobile */
+      box-sizing: border-box; /* Include padding in element's total width and height */
     }
 
+    /* Hide video and canvas elements, they are only used for MediaPipe input */
     #video,
     #canvas {
-      display: none; /* Hide video and canvas */
+      display: none;
     }
 
+    /* Card Container */
     .card {
-      max-width: 48rem;
-      width: 100%; /* Ensure card takes full width on smaller screens */
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 1.5rem;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      backdrop-filter: blur(10px);
+      max-width: 95vw; /* Max width for mobile, fluid */
+      width: 100%;
+      background: #ffffff; /* White card background */
+      border-radius: 1.5rem; /* More rounded corners */
+      box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.2), 0 5px 10px -5px rgba(0, 0, 0, 0.1); /* Softer, more pronounced shadow */
       overflow: hidden;
       margin: auto;
+      border: 4px solid #6ee7b7; /* Playful border */
     }
 
+    /* Card Header */
     .card-header {
       text-align: center;
-      padding: 2rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      padding: 1.5rem 1rem; /* Adjusted padding */
+      background: #34d399; /* Vibrant header background */
+      color: white; /* White text for contrast */
+      border-bottom: 2px solid #10b981; /* Subtle border */
     }
 
+    /* Card Title */
     .card-title {
-      font-size: 2.5rem;
+      font-size: clamp(1.8rem, 5vw, 2.5rem); /* Responsive font size */
       font-weight: bold;
-      margin: 0;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* Text shadow for pop */
     }
 
+    /* Status Text and Dot */
     .status {
       margin-top: 0.5rem;
       font-size: 1rem;
       opacity: 0.9;
     }
 
+    .camera-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .camera-status.active {
+      background: rgba(34, 197, 94, 0.1);
+      color: #16a34a;
+    }
+
+    .camera-status.inactive {
+      background: rgba(239, 68, 68, 0.1);
+      color: #dc2626;
+    }
+
+    .status-dot {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .camera-status.active .status-dot {
+      background: #16a34a;
+    }
+
+    .camera-status.inactive .status-dot {
+      background: #dc2626;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Card Content */
     .card-content {
-      padding: 2rem;
+      padding: 1.5rem; /* Adjusted padding */
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
+    /* Eye Box Container */
     .eye-box {
-      width: 90vw; /* Takes 90% of viewport width */
-      max-width: 28rem; /* Retain max-width for larger screens */
-      height: auto; /* Allow height to adjust proportionally */
-      aspect-ratio: 28 / 18; /* Maintain aspect ratio (width / height) */
-      background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
-      border-radius: 2rem;
+      width: 90vw; /* Fluid width for mobile */
+      max-width: 24rem; /* Max width to prevent it from getting too big */
+      aspect-ratio: 3 / 2; /* Maintain aspect ratio */
+      background: #2d3748; /* Darker, but still soft black */
+      border-radius: 2.5rem; /* Even more rounded */
       margin-bottom: 2rem;
       position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.1),
-        0 8px 32px rgba(0, 0, 0, 0.3);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5); /* Inner shadow for depth */
+      border: 5px solid #4ade80; /* Bright border */
     }
 
+    /* Eyes Container */
     .eyes {
       display: flex;
-      gap: 15vw; /* Increased gap for better separation at larger sizes */
-      max-gap: 4rem; /* Set a maximum gap for larger screens */
+      gap: 3.5rem;
       position: relative;
-      transform: scale(0.8); /* Slightly larger initial scale for mobile */
     }
 
-    @media (min-width: 600px) {
-      .eyes {
-        transform: scale(1); /* Adjust scale for larger screens to revert to original size */
-      }
-    }
-
+    /* Individual Eye Container (for overflow) */
     .eye-container {
-      width: 25vw; /* Increased width relative to viewport to make eyes bigger */
-      max-width: 7rem; /* Retain max-width for larger screens */
-      height: auto; /* Allow height to adjust */
-      aspect-ratio: 1 / 1; /* Maintain aspect ratio */
+      width: 6rem;
+      height: 6rem;
       position: relative;
-      overflow: visible;
+      overflow: visible; /* Allows expressions to extend */
     }
 
+    /* General Eye Style */
     .eye {
-      width: 100%; /* Eyes fill their container */
-      height: 100%; /* Eyes fill their container */
-      background: #3b82f6; /* Default eye color from roboeyes.html */
-      border-radius: 0.5rem; /* Slightly smaller border-radius for more square-ish original look */
+      width: 5.5rem;
+      height: 5.5rem;
+      background: #60a5fa; /* Brighter blue for eyes */
+      border-radius: 0.75rem; /* Softer square corners */
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%);
-      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Slower transition for expressions */
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.4),
-        inset 0 2px 4px rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%); /* Base transform for centering */
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3); /* Eye shadow */
     }
 
-    /* --- Expression Styles from roboeyes.html --- */
+    /* Happy Expression */
     .eye.happy {
-      height: 3rem; /* Adjusted for proportionality */
+      height: 3rem;
       border-radius: 2.75rem 2.75rem 0 0;
       animation: happy-bounce 0.3s ease-in-out infinite;
+      background: #fcd34d; /* Yellowish for happy */
     }
     @keyframes happy-bounce {
       0% { transform: translate(-50%, -50%) translateY(-2.5rem); }
@@ -134,7 +176,7 @@
       transform: translateX(-50%);
       box-sizing: border-box;
       border-radius: 50%;
-      border-bottom-color: #fbbf24;
+      border-bottom-color: #f97316; /* Orange for happy mouth */
       opacity: 0;
       display: none;
       z-index: 5;
@@ -166,17 +208,19 @@
         transform: translateX(-50%) scale(1);
       }
     }
+
+    /* Sad Expression */
     .eye.sad {
-      background: #1e40af;
-      height: 2.75rem; /* Adjusted for proportionality */
-      width: 5.5rem; /* Adjusted for proportionality */
+      background: #3b82f6; /* Deeper blue for sad */
+      height: 2.75rem;
+      width: 5.5rem;
       border-radius: 0 0 2.75rem 2.75rem;
       transform: translate(-50%, -50%);
       animation: sad-transition 3s ease-in-out forwards;
     }
     @keyframes sad-transition {
       0% {
-        height: 5.5rem; /* Adjusted from 6rem in roboeyes.html */
+        height: 5.5rem;
         border-radius: 0.5rem;
         transform: translate(-50%, -50%);
       }
@@ -201,7 +245,7 @@
       transform: translateX(-50%);
       box-sizing: border-box;
       border-radius: 50%;
-      border-top-color: #374151;
+      border-top-color: #6b7280; /* Darker grey for sad mouth */
       opacity: 0;
       display: none;
       z-index: 5;
@@ -244,8 +288,10 @@
         bottom: 14%;
       }
     }
+
+    /* Angry Expression */
     .eye.angry {
-      background: #dc2626;
+      background: #ef4444; /* Brighter red for angry */
       height: 5.5rem;
       width: 6rem;
       clip-path: polygon(100% 0%, 100% 100%, 0% 50%);
@@ -271,16 +317,22 @@
       opacity: 0;
       display: none;
       z-index: 10;
-      animation: pulse 0.3s ease-in-out infinite alternate;
+      animation: pulse-symbol 0.3s ease-in-out infinite alternate; /* Renamed to avoid conflict */
     }
+    @keyframes pulse-symbol { /* Renamed to avoid conflict */
+      from { opacity: 0.4; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* Dizzy Expression */
     .eye.dizzy {
       background: transparent;
     }
     .eye.dizzy::before {
       content: '';
       --b: 8px;
-      --s: 80px; /* Adjusted to be proportional to eye size */
-      --c: #CD8C52;
+      --s: 80px;
+      --c: #CD8C52; /* Playful brown/orange */
       position: absolute;
       top: 50%;
       left: 50%;
@@ -301,8 +353,10 @@
     @keyframes spiral-rotate {
       to { transform: translate(-50%, -50%) rotate(-360deg); }
     }
+
+    /* Love Expression */
     .eye.love {
-      background: #ec4899;
+      background: #f472b6; /* Softer pink for love */
       border-radius: 50%;
       position: relative;
       animation: love-pulse 0.8s ease-in-out infinite;
@@ -329,8 +383,10 @@
       75% { transform: translate(-50%, -50%) scale(1.1); }
       100% { transform: translate(-50%, -50%) scale(1); }
     }
+
+    /* Sleepy Expression */
     .eye.sleepy {
-      background: #6b7280;
+      background: #9ca3af; /* Softer grey for sleepy */
       height: 0.5rem;
       width: 5.5rem;
       border-radius: 0.25rem;
@@ -366,8 +422,10 @@
         transform: translateY(0) scale(1);
       }
     }
+
+    /* Waking Up Expression */
     .eye.waking {
-      background: #6b7280;
+      background: #9ca3af; /* Softer grey */
       height: 2.5rem;
       width: 5.5rem;
       transform: translate(-50%, -50%) translateY(3rem);
@@ -425,8 +483,10 @@
         display: none;
       }
     }
+
+    /* Crying Expression */
     .eye.crying {
-      background: #3b82f6;
+      background: #60a5fa; /* Blue for crying eyes */
       height: 5.5rem;
       width: 5.5rem;
       border-radius: 0.5rem;
@@ -444,7 +504,7 @@
       position: absolute;
       width: 0.5rem;
       height: 0.8rem;
-      background: #60a5fa;
+      background: #93c5fd; /* Lighter blue for tears */
       border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
       opacity: 0;
       z-index: 15;
@@ -490,7 +550,7 @@
       transform: translateX(-50%);
       box-sizing: border-box;
       border-radius: 50%;
-      border-top-color: #374151;
+      border-top-color: #6b7280; /* Darker grey for crying mouth */
       opacity: 0;
       display: none;
       z-index: 5;
@@ -514,89 +574,91 @@
       }
     }
 
-    /* *************************************************** */
-    /* MODIFIED BLINK CSS FOR SMOOTHER MOBILE PERFORMANCE */
-    /* *************************************************** */
+    /* Blink Animation */
     .blink {
-      /* Keep the original centering transform */
+      height: 0.25rem !important;
+      /* Ensure base translate(-50%, -50%) is preserved */
       transform: translate(-50%, -50%) scaleY(0.05) !important;
-      /* Apply transition only to transform property */
       transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
-    /* Controls Grid Styling */
+    /* Controls Grid */
     .controls-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr); /* Adjust based on your button count */
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); /* Responsive grid for buttons */
       gap: 0.75rem;
       width: 100%;
       max-width: 32rem;
-      margin-top: 1rem;
+      margin-top: 1rem; /* Added margin */
     }
 
+    /* Control Buttons */
     .control-button {
-      padding: 0.75rem;
-      background: linear-gradient(145deg, #e5e7eb, #d1d5db);
-      border: none;
-      border-radius: 0.5rem;
+      padding: 0.75rem 0.5rem; /* Adjusted padding for better touch target */
+      background: #d1fae5; /* Light green background */
+      border: 2px solid #34d399; /* Green border */
+      border-radius: 0.75rem; /* More rounded buttons */
+      text-align: center;
       cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: 600;
-      color: #374151;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease-in-out;
+      font-weight: bold;
+      color: #10b981; /* Green text */
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Button shadow */
+      touch-action: manipulation; /* Improves touch responsiveness */
     }
-
     .control-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.2);
-      background: linear-gradient(145deg, #d1d5db, #9ca3af);
+      background: #a7f3d0; /* Lighter green on hover */
+      transform: translateY(-2px); /* Slight lift effect */
     }
-
     .control-button.active {
-      background: linear-gradient(145deg, #4f46e5, #3b82f6);
+      background: #10b981; /* Darker green when active */
       color: white;
-      transform: translateY(-2px) scale(1.05);
-      box-shadow: 0 8px 15px -3px rgba(79, 70, 229, 0.4);
+      transform: scale(1.05);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); /* More prominent shadow when active */
+    }
+    .control-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
     }
 
-    .camera-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-      font-weight: 500;
+    /* Media Queries for smaller screens */
+    @media (max-width: 600px) {
+      .eyes {
+        gap: 2.5rem; /* Reduce gap between eyes on smaller screens */
+      }
+      .eye-container {
+        width: 5rem;
+        height: 5rem;
+      }
+      .eye {
+        width: 4.5rem;
+        height: 4.5rem;
+      }
+      .card-title {
+        font-size: 1.5rem;
+      }
+      .control-button {
+        padding: 0.6rem 0.4rem;
+        font-size: 0.9rem;
+      }
+      .happy-mouth, .sad-mouth, .crying-mouth {
+        width: 4rem; /* Adjust mouth sizes for smaller screens */
+        height: 3rem;
+      }
+      .anger-symbol, .sleep-symbol {
+        font-size: 2rem; /* Adjust symbol sizes */
+      }
+      .controls-grid {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Adjust min width for fewer buttons */
+      }
     }
-
-    .camera-status.active {
-      background: rgba(34, 197, 94, 0.1);
-      color: #16a34a;
-    }
-
-    .camera-status.inactive {
-      background: rgba(239, 68, 68, 0.1);
-      color: #dc2626;
-    }
-
-    .status-dot {
-      width: 0.5rem;
-      height: 0.5rem;
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-
-    .camera-status.active .status-dot {
-      background: #16a34a;
-    }
-
-    .camera-status.inactive .status-dot {
-      background: #dc2626;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+    /* Specific adjustment for when only expression buttons are left */
+    @media (min-width: 601px) {
+      .controls-grid {
+        grid-template-columns: repeat(4, 1fr); /* Adjust for a cleaner layout with fewer buttons */
+      }
     }
   </style>
 </head>
@@ -606,7 +668,7 @@
 
   <div class="card">
     <div class="card-header">
-      <div class="card-title">Robo A.I.</div>
+      <div class="card-title">Robo A.I. with Auto Face Tracking & Expressions</div>
       <div class="status">
         <div class="camera-status inactive" id="camera-status">
           <div class="status-dot"></div>
@@ -650,15 +712,17 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // State variables for eye behavior and face tracking
       let isBlinking = false;
-      let isIdleMode = true; // Auto-managed now
-      let idleTimer = null;
-      let isExpressionActive = false;
-      let currentExpression = null;
-      let expressionTimeout = null;
-      let faceDetected = false; // Flag for MediaPipe detection
+      let isIdleMode = true; // Starts in idle mode (no face detected)
+      let idleTimer = null; // Timer for idle eye movement
+      let isExpressionActive = false; // Flag if an expression is currently active
+      let currentExpression = null; // Stores the name of the current active expression
+      let expressionTimeout = null; // Timer to reset expression after a duration
+      let faceDetected = false; // Flag for MediaPipe face detection
       let lastFaceTime = Date.now(); // Timestamp for last face detection
 
+      // Get references to DOM elements
       const leftEye = document.getElementById('left-eye');
       const rightEye = document.getElementById('right-eye');
       const angerSymbol = document.getElementById('anger-symbol');
@@ -669,16 +733,25 @@
       const tearLeft = document.getElementById('tear-left');
       const tearRight = document.getElementById('tear-right');
       const controlsGrid = document.getElementById('controls');
+      const allExpressionButtons = document.querySelectorAll('[data-expr]'); // Get all expression buttons
 
       // Camera status elements
       const cameraStatus = document.getElementById('camera-status');
       const statusText = document.getElementById('status-text');
 
+      /**
+       * Updates the visual status of the camera.
+       * @param {boolean} active - True if camera is active and tracking, false otherwise.
+       * @param {string} text - The status message to display.
+       */
       function updateCameraStatus(active, text) {
         cameraStatus.className = `camera-status ${active ? 'active' : 'inactive'}`;
         statusText.textContent = text;
       }
 
+      /**
+       * Clears any active idle movement timer.
+       */
       function clearIdleTimer() {
         if (idleTimer) {
           clearTimeout(idleTimer);
@@ -686,72 +759,116 @@
         }
       }
 
+      /**
+       * Moves the eyes to a specific position based on screen coordinates.
+       * This function is used for both face tracking and idle movement.
+       * @param {number} screenX - The target X coordinate on the screen.
+       * @param {number} screenY - The target Y coordinate on the screen.
+       */
       function moveEyesToPosition(screenX, screenY) {
+        // Do not move eyes if an expression is active
         if (isExpressionActive) return;
 
-        const viewportCenterX = window.innerWidth / 2;
-        const viewportCenterY = window.innerHeight / 2;
+        // Get the bounding box of the eye container to calculate relative movement
+        const eyeBox = document.getElementById('eye-box');
+        const boxRect = eyeBox.getBoundingClientRect();
 
-        const sensitivityX = window.innerWidth * 0.15;
-        const sensitivityY = window.innerHeight * 0.15;
+        // Calculate the center of the eye box in screen coordinates
+        const boxCenterX = boxRect.left + boxRect.width / 2;
+        const boxCenterY = boxRect.top + boxRect.height / 2;
 
-        const normalizedX = (screenX - viewportCenterX) / sensitivityX;
-        const normalizedY = (screenY - viewportCenterY) / sensitivityY;
+        // Define a sensitivity range for eye movement.
+        // This determines how far the eyes move for a given face/pointer movement.
+        const sensitivityX = boxRect.width * 0.2; // Move eyes within 20% of eye box width
+        const sensitivityY = boxRect.height * 0.2; // Move eyes within 20% of eye box height
 
+        // Normalize the target coordinates relative to the eye box center and sensitivity
+        const normalizedX = (screenX - boxCenterX) / sensitivityX;
+        const normalizedY = (screenY - boxCenterY) / sensitivityY;
+
+        // Clamp the normalized values to prevent eyes from going too far outside the box
         const clampedX = Math.max(-1, Math.min(1, normalizedX));
         const clampedY = Math.max(-1, Math.min(1, normalizedY));
 
-        const eyeMovementRange = 2.5;
-        const eyeX = clampedX * eyeMovementRange;
-        const eyeY = clampedY * eyeMovementRange;
+        // Convert clamped values to 'rem' units for CSS transform
+        // The '2rem' is a multiplier to control the maximum visual movement of the eyes
+        const eyeX = clampedX * 2;
+        const eyeY = clampedY * 2;
 
-        // Ensure current transformation is preserved if additional transforms are present (like expressions)
-        // However, for blinking, we will apply the specific `scaleY` on top of the base transform.
+        // Apply the transform. The `translate(-50%, -50%)` keeps the eye centered
+        // within its container, and the `translateX/Y` moves it relative to that center.
         const baseTransform = `translate(-50%, -50%)`;
         leftEye.style.transform = `${baseTransform} translateX(${eyeX}rem) translateY(${eyeY}rem)`;
         rightEye.style.transform = `${baseTransform} translateX(${eyeX}rem) translateY(${eyeY}rem)`;
       }
 
+      /**
+       * Resets the eyes to their default state (center gaze, no expression).
+       * Clears any active expression timeouts and removes expression-specific classes/styles.
+       */
       function resetEyes() {
+        // Clear any pending expression timeout
         if (expressionTimeout) {
           clearTimeout(expressionTimeout);
           expressionTimeout = null;
         }
-        // Ensure that base transform is always set for normal eye state
+
+        // Reset eye classes to default
         leftEye.className = 'eye';
         rightEye.className = 'eye';
-        leftEye.style.transform = 'translate(-50%, -50%)'; // Reset to default center position
-        rightEye.style.transform = 'translate(-50%, -50%)';
 
+        // Hide and reset all expression-related elements
         angerSymbol.style.opacity = '0';
         angerSymbol.style.display = 'none';
         sleepSymbol.style.display = 'none';
-        sleepSymbol.classList.remove('popping');
+        sleepSymbol.classList.remove('popping'); // Ensure popping class is removed
+
         sadMouth.style.display = 'none';
         sadMouth.classList.remove('active');
         happyMouth.style.display = 'none';
         happyMouth.classList.remove('active');
         cryingMouth.style.display = 'none';
         cryingMouth.classList.remove('active');
+
         tearLeft.classList.remove('active');
         tearRight.classList.remove('active');
+
+        // Reset expression state variables
         currentExpression = null;
         isExpressionActive = false;
-        
+
+        // Re-enable expression buttons
+        allExpressionButtons.forEach(btn => {
+          btn.disabled = false;
+          btn.classList.remove('active'); // Remove active state from all buttons
+        });
+
+        // Set eyes back to center position if no face is detected, or if face was detected,
+        // it will be immediately updated by onResults.
         if (!faceDetected) {
-            isIdleMode = true;
+            isIdleMode = true; // Re-enter idle mode if no face is detected
             setupIdleMovement();
+        } else {
+            // If face is detected, onResults will handle the eye position
+            // We can just ensure they are not in an expression state here.
+            leftEye.style.transform = 'translate(-50%, -50%)';
+            rightEye.style.transform = 'translate(-50%, -50%)';
         }
       }
 
+      /**
+       * Initiates the blinking animation for the eyes.
+       * Blinking occurs at random intervals.
+       */
       function setupBlinking() {
         const blink = () => {
+          // Do not blink if already blinking or an expression is active
           if (isBlinking || isExpressionActive) {
-            setTimeout(blink, 500);
+            setTimeout(blink, 500); // Check again later
             return;
           }
+
           isBlinking = true;
-          
           // Store current transform to restore after blink
           const leftEyeTransform = leftEye.style.transform;
           const rightEyeTransform = rightEye.style.transform;
@@ -759,61 +876,77 @@
           leftEye.classList.add('blink');
           rightEye.classList.add('blink');
 
+          // After a short delay, remove the blink class
           setTimeout(() => {
             leftEye.classList.remove('blink');
             rightEye.classList.remove('blink');
-            // Restore original transform if it wasn't the default center one
+            // Restore original transform
             leftEye.style.transform = leftEyeTransform;
             rightEye.style.transform = rightEyeTransform;
             isBlinking = false;
-          }, 150);
-          setTimeout(blink, Math.random() * 3000 + 2000);
+          }, 150); // Blink duration
+
+          // Schedule the next blink at a random interval (2 to 4 seconds)
+          setTimeout(blink, Math.random() * 2000 + 2000);
         };
-        setTimeout(blink, Math.random() * 2000 + 1000);
+        // Initial call to start blinking after a short random delay (1 to 2.5 seconds)
+        setTimeout(blink, Math.random() * 1500 + 1000);
       }
 
+      /**
+       * Sets up the idle movement for the eyes, where they randomly look around.
+       * This function is called repeatedly if idle mode is enabled (no face detected).
+       */
       function setupIdleMovement() {
-        if (!isIdleMode || isExpressionActive || faceDetected) {
+        // If idle mode is off or an expression is active, stop idle movement.
+        if (!isIdleMode || isExpressionActive) {
           clearIdleTimer();
           return;
         }
-        
+
         const moveEyes = () => {
+          // If an expression becomes active or face is detected during idle movement, pause and reschedule.
           if (isExpressionActive || faceDetected) {
-            idleTimer = setTimeout(moveEyes, 1000);
+            idleTimer = setTimeout(moveEyes, 1000); // Check again after a short delay
             return;
           }
-          
+
+          // Generate random target coordinates within the eye box for idle movement
           const eyeBox = document.getElementById('eye-box');
           const boxRect = eyeBox.getBoundingClientRect();
-          
+
+          // Target a random point within 30-70% of the eye box's width/height
           const targetX = boxRect.left + boxRect.width * (0.3 + Math.random() * 0.4);
           const targetY = boxRect.top + boxRect.height * (0.3 + Math.random() * 0.4);
 
           moveEyesToPosition(targetX, targetY);
-          
+
+          // Schedule the next idle movement at a random interval (1.5 to 3.5 seconds)
           const nextMove = Math.random() * 2000 + 1500;
           idleTimer = setTimeout(moveEyes, nextMove);
         };
-        
+
         // Ensure eyes are centered before starting idle movement if they aren't
         leftEye.style.transform = 'translate(-50%, -50%)';
         rightEye.style.transform = 'translate(-50%, -50%)';
 
+        // Initial delay before the first idle movement (1 to 2.5 seconds)
         const initialDelay = Math.random() * 1500 + 1000;
         idleTimer = setTimeout(moveEyes, initialDelay);
       }
 
+      /**
+       * Activates a specific eye expression.
+       * Resets current state, applies expression-specific styles, and sets a timeout to revert.
+       * @param {string} expression - The name of the expression (e.g., 'happy', 'sad').
+       */
       function setExpression(expression) {
-        resetEyes();
+        resetEyes(); // Always reset eyes before applying a new expression
         isExpressionActive = true;
         currentExpression = expression;
-        clearIdleTimer();
+        clearIdleTimer(); // Stop idle movement when an expression is active
 
-        document.querySelectorAll('[data-expr]').forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.expr === expression);
-        });
-
+        // Apply specific styles and animations based on the expression
         if (expression === 'angry') {
           leftEye.className = 'eye angry left';
           rightEye.className = 'eye angry right';
@@ -833,18 +966,16 @@
           leftEye.className = 'eye sleepy';
           rightEye.className = 'eye sleepy';
           sleepSymbol.style.display = 'block';
-          sleepSymbol.style.opacity = '1';
-          sleepSymbol.classList.remove('popping');
         } else if (expression === 'waking') {
           leftEye.className = 'eye waking';
           rightEye.className = 'eye waking';
           sleepSymbol.style.display = 'block';
-          sleepSymbol.style.opacity = '1';
-          sleepSymbol.classList.add('popping');
+          sleepSymbol.className = 'sleep-symbol popping'; // Trigger pop animation
+          // Remove popping class after animation to allow reuse
           setTimeout(() => {
-            sleepSymbol.classList.remove('popping');
+            sleepSymbol.className = 'sleep-symbol';
             sleepSymbol.style.display = 'none';
-          }, 2000);
+          }, 2000); // Matches animation duration
         } else if (expression === 'dizzy') {
           leftEye.className = 'eye dizzy';
           rightEye.className = 'eye dizzy';
@@ -860,80 +991,112 @@
           tearRight.classList.add('active');
         }
 
+        // Add 'active' class to the clicked expression button
+        allExpressionButtons.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.expr === expression);
+        });
+
+        // Disable all buttons while an expression is active
+        allExpressionButtons.forEach(btn => {
+          btn.disabled = true;
+        });
+
+        // Set a timeout to reset the expression after 8 seconds
         expressionTimeout = setTimeout(() => {
-          resetEyes();
-        }, 8000);
+          resetEyes(); // Revert to default state
+        }, 8000); // Expression duration
       }
 
+
+      // Initialize FaceMesh from MediaPipe
       const faceMesh = new FaceMesh({
         locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
       });
 
+      // Set options for FaceMesh
       faceMesh.setOptions({
-        maxNumFaces: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
+        maxNumFaces: 1, // Detect up to 1 face
+        minDetectionConfidence: 0.5, // Minimum confidence for face detection
+        minTrackingConfidence: 0.5 // Minimum confidence for face tracking
       });
 
+      /**
+       * Callback function when FaceMesh processes a frame.
+       * Updates eye position if face is detected, otherwise manages idle mode.
+       * @param {Object} results - The results from FaceMesh.
+       */
       faceMesh.onResults(onResults);
 
       function onResults(results) {
         const now = Date.now();
-        
+
+        // If an expression is active, MediaPipe results should not override it
         if (isExpressionActive) {
             return;
         }
 
-        if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+        if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+          faceDetected = true;
+          lastFaceTime = now;
+          isIdleMode = false; // Turn off idle mode
+          clearIdleTimer(); // Stop any active idle movement
+          updateCameraStatus(true, "Face tracking - Active");
+
+          const landmarks = results.multiFaceLandmarks[0];
+          const noseTip = landmarks[4]; // Landmark for the tip of the nose
+
+          if (noseTip) {
+            // Mirror X-axis for natural eye movement (if you move right, eyes move right)
+            const mirroredNoseX = 1 - noseTip.x;
+            const noseY = noseTip.y;
+
+            // Convert normalized landmark coordinates to screen coordinates
+            const screenX = mirroredNoseX * window.innerWidth;
+            const screenY = noseY * window.innerHeight;
+
+            moveEyesToPosition(screenX, screenY);
+          }
+        } else {
           faceDetected = false;
+          // If no face is detected for more than 2 seconds AND no expression is active,
+          // switch to idle mode.
           if (now - lastFaceTime > 2000 && !isIdleMode) {
             isIdleMode = true;
             updateCameraStatus(true, "Face tracking - Idle mode");
-            setupIdleMovement();
+            setupIdleMovement(); // Start idle movement
+          } else if (!isIdleMode) {
+            // If no face detected but not yet in idle mode (e.g., just lost face),
+            // update status to indicate no face.
+            updateCameraStatus(false, "Face tracking - No face detected");
           }
-          return;
-        }
-
-        faceDetected = true;
-        lastFaceTime = now;
-        isIdleMode = false;
-        clearIdleTimer();
-        updateCameraStatus(true, "Face tracking - Active");
-
-        const landmarks = results.multiFaceLandmarks[0];
-        const noseTip = landmarks[4];
-
-        if (noseTip) {
-          const mirroredNoseX = 1 - noseTip.x;
-          const noseY = noseTip.y;
-
-          const screenX = mirroredNoseX * window.innerWidth;
-          const screenY = noseY * window.innerHeight;
-
-          moveEyesToPosition(screenX, screenY);
         }
       }
 
+      // Setup camera to feed frames to FaceMesh
       const camera = new Camera(document.getElementById('video'), {
         onFrame: async () => {
+          // Send the video frame to FaceMesh for processing
           await faceMesh.send({ image: document.getElementById('video') });
         },
-        width: 640,
-        height: 480
+        width: 640, // Desired video width
+        height: 480 // Desired video height
       });
 
+      // Start the camera and handle success/failure
       camera.start().then(() => {
         updateCameraStatus(true, "Camera ready - Look at the screen!");
-        setupBlinking();
-        setupIdleMovement();
+        setupBlinking(); // Start blinking once camera is ready
+        setupIdleMovement(); // Start idle movement initially (since no face yet)
       }).catch((error) => {
         console.error('Camera access failed:', error);
         updateCameraStatus(false, "Camera access failed");
+        // If camera fails, ensure blinking and idle mode still work
         isIdleMode = true;
         setupBlinking();
         setupIdleMovement();
       });
 
+      // Event listener for expression buttons
       controlsGrid.addEventListener('click', function (e) {
         const exprBtn = e.target.closest('[data-expr]');
         if (exprBtn) {
@@ -941,21 +1104,26 @@
         }
       });
 
+      // Periodically check if face detection has timed out
       setInterval(() => {
         const now = Date.now();
-        if (faceDetected && now - lastFaceTime > 3000) {
-          faceDetected = false;
-          if (!isExpressionActive) {
+        // If face was detected but now it's been more than 3 seconds since last detection,
+        // and no expression is active, switch to idle mode.
+        if (faceDetected && now - lastFaceTime > 3000 && !isExpressionActive) {
+          faceDetected = false; // Reset flag
+          if (!isIdleMode) { // Only trigger if not already in idle mode
             isIdleMode = true;
             updateCameraStatus(true, "Face tracking - Idle mode");
             setupIdleMovement();
           }
         }
-      }, 1000);
+      }, 1000); // Check every second
 
+      // Initial calls to set up animations and behavior
       setupBlinking();
-      setupIdleMovement();
+      // setupIdleMovement() is called by camera.start() success or failure, or onResults.
     });
   </script>
 </body>
 </html>
+
