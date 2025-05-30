@@ -27,7 +27,7 @@
             padding: 2.5rem;
             text-align: center;
             max-width: 90%; /* Responsive width */
-            width: 600px;
+            width: 600px; /* Max width for larger screens */
             display: flex;
             flex-direction: column;
             gap: 2rem;
@@ -55,9 +55,12 @@
             margin-bottom: 2rem;
         }
 
-        @media (min-width: 640px) {
+        @media (min-width: 640px) { /* sm breakpoint in Tailwind */
             .button-grid {
-                grid-template-columns: repeat(2, 1fr); /* Two columns on larger screens */
+                /* If there are 3 items, this will make 2 columns and the 3rd item will wrap. 
+                   If you want 3 items in a row, you could use grid-template-columns: repeat(3, 1fr); 
+                   but that might make buttons too narrow. Current setup is fine for wrapping. */
+                grid-template-columns: repeat(2, 1fr); 
             }
         }
 
@@ -76,6 +79,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
             border: 3px solid #6495ED; /* Border for pop */
+            min-height: 180px; /* Ensure buttons have a consistent height */
         }
 
         .action-button:hover {
@@ -103,9 +107,20 @@
         .disclaimer strong {
             color: #FF6347;
         }
+        
+        .disclaimer ul {
+            list-style-type: none; /* Remove default bullets */
+            padding-left: 0;
+        }
+        .disclaimer ul li {
+            padding-left: 1.5em; /* Space for emoji bullet */
+            text-indent: -1.5em; /* Align text after emoji */
+            margin-bottom: 0.5em;
+        }
+
 
         /* --- Mobile Specific Adjustments --- */
-        @media (max-width: 768px) {
+        @media (max-width: 768px) { /* md breakpoint */
             body {
                 padding: 0.5rem; /* Reduce overall padding */
             }
@@ -114,6 +129,7 @@
                 padding: 1.5rem; /* Reduce container padding */
                 border-radius: 1.5rem; /* Slightly less rounded for smaller screens */
                 gap: 1.5rem; /* Reduce gap between sections */
+                width: 95%; /* More width on mobile */
             }
 
             h1 {
@@ -135,6 +151,7 @@
                 padding: 1.5rem 1rem; /* Reduce button padding */
                 font-size: 1.5rem; /* Smaller button text */
                 border-radius: 1rem; /* Slightly less rounded buttons */
+                min-height: auto; /* Allow natural height on mobile */
             }
 
             .action-button span {
@@ -149,7 +166,7 @@
             }
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 480px) { /* xs breakpoint */
             .container {
                 padding: 1rem; /* Even smaller container padding */
                 border-radius: 1rem;
@@ -183,7 +200,7 @@
 <body>
     <div class="container">
         <h1>✨ Robo A.I. Luna ✨</h1>
-        <p>Hello, little explorer! Get ready to have some super fun with Robo A.I. Luna! You can choose to chat with me or play with my silly roboeyes!</p>
+        <p>Hello, little explorer! Get ready to have some super fun with Robo A.I. Luna! You can choose to chat with me, play with my silly roboeyes, or practice your spelling!</p>
 
         <div class="button-grid">
             <a href="https://azmilazzo.github.io/kids/aichat.html" class="action-button">
@@ -194,12 +211,15 @@
                 <span>👀</span>
                 Play with Roboeyes
             </a>
+            <a href="https://azmilazzo.github.io/kids/spelling.html" class="action-button"> <span>📝</span>
+                Spelling Practice
+            </a>
         </div>
 
         <div class="disclaimer">
             <p><strong>Important stuff for grown-ups and curious kids:</strong></p>
             <p>
-                When you use the "Chat with A.I. Luna" or "Play with Roboeyes" features, your browser might ask for permission to use your <strong>microphone</strong> and <strong>camera</strong>.
+                When you use the "Chat with A.I. Luna", "Play with Roboeyes", or "Spelling Practice" features, your browser might ask for permission to use your <strong>microphone</strong> and <strong>camera</strong> (camera for Roboeyes, microphone for A.I. Chat and Spelling Practice recordings).
                 <br><br>
                 Please know that:
                 <ul>
@@ -212,3 +232,4 @@
     </div>
 </body>
 </html>
+
