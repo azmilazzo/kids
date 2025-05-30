@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Practice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px; /* Adjusted padding */
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        h1, h2 {
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 25px; /* Adjusted margin */
+            font-size: 2.2em; /* Adjusted font size */
+        }
+
+        h2 {
+            color: #555;
+            margin-bottom: 15px; /* Adjusted margin */
+            font-size: 1.6em; /* Adjusted font size */
+        }
+        
+        .initial-choice-section h1 { color: #5a67d8; }
+        .parent-section.english-mode h1 { color: #4CAF50; } /* Green for English Parent */
+        .parent-section.malay-mode h1 { color: #FFC107; } /* Amber for Malay Parent */
+        .child-section h1 { color: #667eea; }
+
+
+        textarea, select, input[type="text"] {
+            width: 100%;
+            padding: 12px; /* Adjusted padding */
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 15px; /* Adjusted margin */
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        textarea { min-height: 120px; resize: vertical; }
+        select { background: white; cursor: pointer; }
+
+        textarea:focus, select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 8px rgba(102, 126, 234, 0.2);
+        }
+
+        button {
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1em; /* Relative font size */
+            font-weight: bold;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+        button.primary-btn { background: linear-gradient(45deg, #667eea, #764ba2); }
+        button.secondary-btn { background: linear-gradient(45deg, #ffeaa7, #fab1a0); }
+        button.danger-btn { background: linear-gradient(45deg, #fd79a8, #e84393); }
+        button.english-btn { background: linear-gradient(45deg, #69f0ae, #00e676); } /* Bright Green */
+        button.malay-btn { background: linear-gradient(45deg, #ffd54f, #ffc107); } /* Bright Amber */
+
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+        button:active { transform: translateY(0); }
+        button:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        
+        .small-btn { padding: 8px 12px; font-size: 0.8em; margin: 2px 4px; }
+
+        .message {
+            padding: 12px; /* Adjusted padding */
+            border-radius: 10px;
+            margin: 15px 0; /* Adjusted margin */
+            font-weight: bold;
+            font-size: 0.95em; /* Adjusted font size */
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #e3f2fd; color: #1565c0; border: 1px solid #b3e5fc; }
+
+        .feedback { font-size: 1.1em; font-weight: bold; margin: 15px 0; padding: 12px; border-radius: 10px; }
+        .feedback.correct { background: #d4edda; color: #155724; }
+        .feedback.wrong { background: #f8d7da; color: #721c24; }
+
+        .word-display {
+            font-size: 1.5em; /* Adjusted font size */
+            font-weight: bold;
+            color: #333;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #667eea;
+            min-height: 50px;
+        }
+
+        .progress { margin: 15px 0; font-size: 1em; color: #555; }
+
+        .instructions {
+            background: #f0f4f8; /* Lighter blue */
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            color: #37474f; /* Darker grey-blue */
+            line-height: 1.6;
+            text-align: left;
+            border: 1px solid #dbe4ed;
+        }
+        .instructions strong { color: #5a67d8; }
+
+
+        .celebration {
+            animation: bounce 0.6s ease-in-out;
+            background: linear-gradient(45deg, #ff9a9e, #fecfef);
+            color: #333;
+            padding: 25px; /* Adjusted padding */
+            border-radius: 15px;
+            margin: 15px 0;
+        }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-8px); } 60% { transform: translateY(-4px); } }
+        
+        #wordRecordingSection { margin-top: 15px; text-align: left; }
+        .word-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 8px; background-color: #f9f9f9; }
+        .word-item-text { font-size: 1.1em; color: #333; flex-grow: 1; }
+        .word-item-controls button { margin-left: 5px; }
+        .recording-status { font-size: 0.8em; color: #777; margin-left: 8px; min-width: 90px; text-align: right; }
+
+        .language-choice-buttons button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            margin: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 15px; margin: 10px; }
+            h1 { font-size: 1.8em; }
+            h2 { font-size: 1.4em; }
+            button { width: calc(100% - 16px); margin: 8px; }
+            .language-choice-buttons button { width: calc(100% - 20px); }
+            .word-item { flex-direction: column; align-items: flex-start; }
+            .word-item-controls { margin-top: 8px; width: 100%; display: flex; flex-wrap: wrap; justify-content: flex-start; }
+            .word-item-controls button { margin: 4px; flex-grow: 1; }
+            .recording-status { margin-left: 0; margin-top: 4px; text-align: left; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="initialChoiceSection" class="section initial-choice-section">
+            <h1>👋 Welcome to Spelling Practice!</h1>
+            <h2>Choose your practice mode:</h2>
+            <div class="language-choice-buttons">
+                <button onclick="selectAppMode('english')" class="english-btn">🇬🇧 English Practice</button>,
+                <button onclick="selectAppMode('malay')" class="malay-btn">🇲🇾 Malay Practice</button>
+            </div>
+        </div>
+
+        <div id="parentSection" class="section parent-section">
+            <div id="parentEnglishSetup" style="display:none;">
+                <h1>📚 Parent's Corner (English)</h1>
+                <div class="instructions">
+                    <p><strong>Instructions:</strong> Enter English spelling words below (one word per line). Select the preferred voice accent. Then, save the list and switch to Child Mode!</p>
+                </div>
+                <h2>Enter Spelling Words</h2>
+                <textarea id="wordInputEnglish" placeholder="e.g.&#10;apple&#10;banana&#10;adventure"></textarea>
+                <h2>Select English Voice Accent</h2>
+                <select id="languageSelectEnglish">
+                    <option value="en-US">English (US)</option>
+                    <option value="en-GB">English (UK)</option>
+                </select>
+                <div>
+                    <button onclick="saveEnglishSpellingList()" class="primary-btn">💾 Save English List</button>
+                </div>
+            </div>
+
+            <div id="parentMalaySetup" style="display:none;">
+                <h1>📚 Parent's Corner (Malay)</h1>
+                <div id="malayStep1WordInput">
+                    <div class="instructions">
+                        <p><strong>Step 1: Enter Malay Words</strong></p>
+                        <p>Enter the Malay spelling words below, one word per line.</p>
+                    </div>
+                    <h2>Enter Spelling Words</h2>
+                    <textarea id="wordInputMalay" placeholder="e.g.&#10;epal&#10;pisang&#10;pengembaraan"></textarea>
+                    <div>
+                        <button onclick="processMalayWordsForRecording()" class="primary-btn">🎤 Next: Record Audio</button>
+                    </div>
+                </div>
+                <div id="malayStep2Recording" style="display:none;">
+                    <div class="instructions">
+                        <p><strong>Step 2: Record Audio for Malay Words</strong></p>
+                        <p>For each word, record your voice. Click "Record", speak, then "Stop". You can "Play" or "Delete" recordings.</p>
+                    </div>
+                    <h2>🎙️ Record Audio</h2>
+                    <div id="wordListContainerMalay"></div>
+                    <div style="margin-top: 20px;">
+                        <button onclick="finalizeMalayListAndReturn()" class="primary-btn">✅ Finalize Malay List</button>
+                        <button onclick="backToMalayWordInput()" class="secondary-btn">⬅️ Back to Word Input</button>
+                    </div>
+                    <div id="recordingParentMessageMalay"></div>
+                </div>
+            </div>
+            
+            <div id="parentControls" style="margin-top: 20px;">
+                 <button onclick="switchToChildMode()" class="secondary-btn">👶 Go to Child Mode</button>
+                 <button onclick="clearSpellingListConfirmation()" class="danger-btn">🗑️ Clear List & Change Mode</button>
+            </div>
+            <div id="parentMessageCommon"></div>
+            <div id="clearConfirmation" style="display:none;" class="message info">
+                Are you sure you want to clear the current spelling list and return to language selection?
+                <div>
+                    <button onclick="confirmClearSpellingList(true)" class="danger-btn small-btn">Yes, Clear</button>
+                    <button onclick="confirmClearSpellingList(false)" class="secondary-btn small-btn">No, Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="childSection" class="section child-section">
+            <h1>🌟 Spelling Practice</h1>
+            <div id="childMessage" class="message" style="display:none;"></div>
+            <div id="gameInstructions" class="instructions">
+                <p><strong>How to play:</strong></p>
+                <p>1. Click "Start Spelling" to begin.</p>
+                <p>2. Listen to the word.</p>
+                <p>3. Type the word you heard.</p>
+                <p>4. Click "Check Spelling".</p>
+            </div>
+            <div id="gameContent" style="display: none;">
+                <div class="progress"><span id="progressText">Word 1 of 0</span></div>
+                <div class="word-display" id="wordDisplay">Click "Read Word Aloud"!</div>
+                <input type="text" id="answerInput" placeholder="Type the word..." onkeypress="handleKeyPress(event)">
+                <div>
+                    <button onclick="readCurrentWord()" class="secondary-btn">🔊 Read Word Aloud</button>
+                    <button onclick="checkSpelling()" id="checkBtn" class="primary-btn">✅ Check Spelling</button>
+                </div>
+                <div id="feedback" class="feedback" style="display: none;"></div>
+                <button onclick="nextWord()" id="nextBtn" style="display: none;" class="primary-btn">➡️ Next Word</button>
+            </div>
+            <div id="gameComplete" style="display: none;" class="celebration">
+                <h2>🎉 Congratulations!</h2>
+                <p id="finalScore"></p>
+            </div>
+            <div>
+                <button onclick="startSpelling()" id="startBtn" class="primary-btn">🚀 Start Spelling</button>
+                <button onclick="startOver()" id="restartBtn" style="display: none;" class="primary-btn">🔄 Start Over</button>
+                <button onclick="switchToParentMode()" class="secondary-btn">👨‍👩‍👧‍👦 Back to Parent Mode</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let appMode = null; // 'english' or 'malay'
+        let spellingList = []; // Array of objects: { text: "word", audioBlob: null }
+        let selectedEnglishAccent = 'en-US'; // For English TTS
+        let currentWordIndex = 0;
+        let correctAnswers = 0;
+        let isGameActive = false;
+
+        let mediaRecorder;
+        let audioChunks = [];
+
+        window.onload = function() {
+            showSection('initialChoiceSection');
+            initializeSpeechSynthesis();
+        };
+
+        function initializeSpeechSynthesis() {
+            if ('speechSynthesis' in window) {
+                speechSynthesis.getVoices(); 
+                speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+                speechSynthesis.cancel();
+            } else {
+                console.warn('Speech synthesis not supported.');
+                // This message might be better placed if English mode is chosen and TTS is crucial
+            }
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        function selectAppMode(mode) {
+            appMode = mode;
+            spellingList = []; // Clear list when mode changes
+            document.getElementById('parentEnglishSetup').style.display = (mode === 'english') ? 'block' : 'none';
+            document.getElementById('parentMalaySetup').style.display = (mode === 'malay') ? 'block' : 'none';
+            
+            if (mode === 'malay') {
+                document.getElementById('malayStep1WordInput').style.display = 'block';
+                document.getElementById('malayStep2Recording').style.display = 'none';
+                document.getElementById('parentSection').classList.add('malay-mode');
+                document.getElementById('parentSection').classList.remove('english-mode');
+            } else {
+                document.getElementById('parentSection').classList.add('english-mode');
+                document.getElementById('parentSection').classList.remove('malay-mode');
+            }
+            showSection('parentSection');
+            showParentMessageCommon(`Switched to ${mode.charAt(0).toUpperCase() + mode.slice(1)} mode. Please set up your spelling list.`, 'info');
+        }
+
+        // --- English Mode Specific ---
+        function saveEnglishSpellingList() {
+            const input = document.getElementById('wordInputEnglish').value.trim();
+            selectedEnglishAccent = document.getElementById('languageSelectEnglish').value;
+            
+            if (!input) {
+                showParentMessageCommon('Please enter some English spelling words!', 'error');
+                return;
+            }
+            const words = input.split('\n').map(w => w.trim().toLowerCase()).filter(w => w.length > 0);
+            if (words.length === 0) {
+                showParentMessageCommon('Please enter valid English spelling words!', 'error');
+                return;
+            }
+            spellingList = words.map(text => ({ text, audioBlob: null }));
+            showParentMessageCommon(`Successfully saved ${words.length} English words! Accent: ${selectedEnglishAccent}.`, 'success');
+        }
+
+        // --- Malay Mode Specific ---
+        function processMalayWordsForRecording() {
+            const input = document.getElementById('wordInputMalay').value.trim();
+            if (!input) {
+                showParentMessageCommon('Please enter some Malay spelling words!', 'error');
+                return;
+            }
+            const words = input.split('\n').map(w => w.trim().toLowerCase()).filter(w => w.length > 0);
+            if (words.length === 0) {
+                showParentMessageCommon('Please enter valid Malay spelling words!', 'error');
+                return;
+            }
+            // Preserve existing recordings if words match from a previous setup in the same session
+            const newSpellingList = words.map(wordText => {
+                const existingEntry = spellingList.find(item => item.text === wordText && item.audioBlob);
+                return { text: wordText, audioBlob: existingEntry ? existingEntry.audioBlob : null };
+            });
+            spellingList = newSpellingList;
+
+            document.getElementById('malayStep1WordInput').style.display = 'none';
+            document.getElementById('malayStep2Recording').style.display = 'block';
+            populateWordRecordingListMalay();
+            showParentMessageCommon('Words loaded. Record audio for each Malay word.', 'info', 'recordingParentMessageMalay');
+        }
+
+        function populateWordRecordingListMalay() {
+            const container = document.getElementById('wordListContainerMalay');
+            container.innerHTML = ''; 
+            spellingList.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'word-item';
+                div.innerHTML = `
+                    <span class="word-item-text">${item.text}</span>
+                    <div class="word-item-controls">
+                        <button id="recordBtn-${index}" class="small-btn" onclick="startRecordingMalay(${index})">🎤 Record</button>
+                        <button id="stopBtn-${index}" class="small-btn danger-btn" style="display:none;" onclick="stopRecordingMalay(${index})">🛑 Stop</button>
+                        <button id="playBtn-${index}" class="small-btn secondary-btn" ${!item.audioBlob ? 'disabled' : ''} onclick="playRecordingMalay(${index})">▶️ Play</button>
+                        <button id="deleteRecBtn-${index}" class="small-btn danger-btn" ${!item.audioBlob ? 'disabled' : ''} onclick="deleteRecordingMalay(${index})">🗑️ Del Rec</button>
+                    </div>
+                    <span class="recording-status" id="status-${index}">${item.audioBlob ? 'Recording saved' : 'No recording'}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        async function startRecordingMalay(index) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    spellingList[index].audioBlob = audioBlob;
+                    document.getElementById(`recordBtn-${index}`).style.display = 'inline-block';
+                    document.getElementById(`stopBtn-${index}`).style.display = 'none';
+                    document.getElementById(`playBtn-${index}`).disabled = false;
+                    document.getElementById(`deleteRecBtn-${index}`).disabled = false;
+                    document.getElementById(`status-${index}`).textContent = 'Recording saved!';
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                mediaRecorder.start();
+                document.getElementById(`recordBtn-${index}`).style.display = 'none';
+                document.getElementById(`stopBtn-${index}`).style.display = 'inline-block';
+                document.getElementById(`status-${index}`).textContent = 'Recording...';
+            } catch (err) {
+                console.error("Mic error:", err);
+                document.getElementById(`status-${index}`).textContent = 'Mic error!';
+                showParentMessageCommon('Microphone access denied or error.', 'error', 'recordingParentMessageMalay');
+            }
+        }
+
+        function stopRecordingMalay(index) {
+            if (mediaRecorder && mediaRecorder.state === "recording") mediaRecorder.stop();
+        }
+
+        function playRecordingMalay(index) {
+            if (spellingList[index] && spellingList[index].audioBlob) {
+                const audioUrl = URL.createObjectURL(spellingList[index].audioBlob);
+                const audio = new Audio(audioUrl);
+                audio.play().catch(e => console.error("Play error:", e));
+                audio.onended = () => URL.revokeObjectURL(audioUrl);
+            }
+        }
+
+        function deleteRecordingMalay(index) {
+            spellingList[index].audioBlob = null;
+            document.getElementById(`playBtn-${index}`).disabled = true;
+            document.getElementById(`deleteRecBtn-${index}`).disabled = true;
+            document.getElementById(`status-${index}`).textContent = 'No recording';
+        }
+
+        function finalizeMalayListAndReturn() {
+            showParentMessageCommon(`Malay list finalized with ${spellingList.length} words.`, 'success');
+            // Stay in parent mode, but hide recording section and show word input again, or just a success message.
+            // For now, just show success and they can click "Go to Child Mode"
+            document.getElementById('malayStep2Recording').style.display = 'none';
+            document.getElementById('malayStep1WordInput').style.display = 'block'; // Or a different view
+        }
+        
+        function backToMalayWordInput() {
+            document.getElementById('malayStep2Recording').style.display = 'none';
+            document.getElementById('malayStep1WordInput').style.display = 'block';
+             // Repopulate wordInput from spellingList
+            document.getElementById('wordInputMalay').value = spellingList.map(item => item.text).join('\n');
+        }
+
+        // --- Common Parent/Child Logic ---
+        function clearSpellingListConfirmation() {
+            document.getElementById('clearConfirmation').style.display = 'block';
+        }
+
+        function confirmClearSpellingList(shouldClear) {
+            document.getElementById('clearConfirmation').style.display = 'none';
+            if (shouldClear) {
+                spellingList = [];
+                appMode = null; // Reset app mode
+                document.getElementById('wordInputEnglish').value = '';
+                document.getElementById('wordInputMalay').value = '';
+                showSection('initialChoiceSection'); // Go back to language choice
+            }
+        }
+        
+        function switchToChildMode() {
+            if (!appMode) {
+                 showParentMessageCommon('Please select a language mode and set up a list first.', 'error');
+                 return;
+            }
+            if (spellingList.length === 0) {
+                showParentMessageCommon('Please save a spelling list first!', 'error');
+                return;
+            }
+            showSection('childSection');
+            resetGame();
+        }
+
+        function switchToParentMode() {
+            if (!appMode) { // Should not happen if already in child mode, but as a safeguard
+                showSection('initialChoiceSection');
+                return;
+            }
+            // Show the correct parent setup based on appMode
+            document.getElementById('parentEnglishSetup').style.display = (appMode === 'english') ? 'block' : 'none';
+            document.getElementById('parentMalaySetup').style.display = (appMode === 'malay') ? 'block' : 'none';
+            if (appMode === 'malay') { // Ensure correct Malay step is shown
+                document.getElementById('malayStep1WordInput').style.display = 'block';
+                document.getElementById('malayStep2Recording').style.display = 'none';
+            }
+             // Repopulate inputs
+            if (appMode === 'english') {
+                document.getElementById('wordInputEnglish').value = spellingList.map(item => item.text).join('\n');
+                document.getElementById('languageSelectEnglish').value = selectedEnglishAccent;
+            } else if (appMode === 'malay') {
+                 document.getElementById('wordInputMalay').value = spellingList.map(item => item.text).join('\n');
+            }
+            showSection('parentSection');
+        }
+
+        function startSpelling() {
+            if (spellingList.length === 0) {
+                showChildMessage('No spelling words. Ask a parent to add some!', 'error');
+                return;
+            }
+            isGameActive = true;
+            currentWordIndex = 0;
+            correctAnswers = 0;
+            document.getElementById('gameInstructions').style.display = 'none';
+            document.getElementById('gameContent').style.display = 'block';
+            document.getElementById('gameComplete').style.display = 'none';
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('restartBtn').style.display = 'none';
+            document.getElementById('childMessage').style.display = 'none';
+            updateProgress();
+            readCurrentWord();
+        }
+
+        function readCurrentWord() {
+            if (currentWordIndex >= spellingList.length) return;
+            const currentItem = spellingList[currentWordIndex];
+            const word = currentItem.text;
+            const wordDisplayDiv = document.getElementById('wordDisplay');
+            speechSynthesis.cancel();
+
+            setTimeout(() => {
+                if (appMode === 'malay' && currentItem.audioBlob) {
+                    wordDisplayDiv.textContent = 'Playing recording...';
+                    playRecordingMalay(currentWordIndex); // Reusing this function
+                } else if (appMode === 'english' && 'speechSynthesis' in window) {
+                    wordDisplayDiv.textContent = 'Listen carefully...';
+                    speakWordWithTTS(word, selectedEnglishAccent);
+                } else if (appMode === 'malay' && !currentItem.audioBlob) {
+                     wordDisplayDiv.innerHTML = `<div style="color: orange;">⚠️ No recording for this word. The word is: <strong>${word}</strong></div>`;
+                } else { // Fallback for no TTS or other issues
+                    wordDisplayDiv.innerHTML = `<div style="color: orange;">Audio not available. Word is: <strong>${word}</strong></div>`;
+                }
+            }, 100);
+        }
+        
+        function speakWordWithTTS(word, lang) {
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = lang;
+            utterance.rate = (lang === 'en-US' || lang === 'en-GB') ? 0.7 : 0.8; // Slightly different rates
+            const voices = speechSynthesis.getVoices();
+            let selectedVoice = voices.find(v => v.lang === lang && v.default) || voices.find(v => v.lang === lang);
+             if (!selectedVoice) selectedVoice = voices.find(v => v.lang.startsWith(lang.split('-')[0])); // Broader match
+
+            if (selectedVoice) utterance.voice = selectedVoice;
+            
+            utterance.onerror = e => {
+                console.error('TTS error:', e.error);
+                document.getElementById('wordDisplay').innerHTML = `<div style="color: red;">❌ TTS Error. Word: <strong>${word}</strong></div>`;
+            };
+            speechSynthesis.speak(utterance);
+        }
+
+        function checkSpelling() {
+            if (!isGameActive) return;
+            const userAnswer = document.getElementById('answerInput').value.trim().toLowerCase();
+            const correctWord = spellingList[currentWordIndex].text;
+            const feedbackDiv = document.getElementById('feedback');
+            if (!userAnswer) {
+                feedbackDiv.textContent = 'Please type your answer.';
+                feedbackDiv.className = 'feedback error';
+                feedbackDiv.style.display = 'block';
+                return;
+            }
+            if (userAnswer === correctWord) {
+                feedbackDiv.textContent = '🎉 Correct!';
+                feedbackDiv.className = 'feedback correct';
+                correctAnswers++;
+            } else {
+                feedbackDiv.innerHTML = `❌ Wrong. Correct is: <strong>${correctWord}</strong>`;
+                feedbackDiv.className = 'feedback wrong';
+            }
+            feedbackDiv.style.display = 'block';
+            document.getElementById('checkBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'inline-block';
+            document.getElementById('answerInput').focus();
+        }
+
+        function nextWord() {
+            currentWordIndex++;
+            if (currentWordIndex >= spellingList.length) {
+                endGame();
+                return;
+            }
+            document.getElementById('answerInput').value = '';
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('checkBtn').style.display = 'inline-block';
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('answerInput').focus();
+            updateProgress();
+            readCurrentWord();
+        }
+
+        function endGame() {
+            isGameActive = false;
+            document.getElementById('gameContent').style.display = 'none';
+            document.getElementById('gameComplete').style.display = 'block';
+            document.getElementById('restartBtn').style.display = 'inline-block';
+            const percentage = spellingList.length > 0 ? Math.round((correctAnswers / spellingList.length) * 100) : 0;
+            document.getElementById('finalScore').textContent = `You got ${correctAnswers} of ${spellingList.length} correct (${percentage}%)!`;
+        }
+
+        function startOver() {
+            resetGame();
+            startSpelling();
+        }
+
+        function resetGame() {
+            isGameActive = false;
+            currentWordIndex = 0;
+            correctAnswers = 0;
+            document.getElementById('answerInput').value = '';
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('gameInstructions').style.display = 'block';
+            document.getElementById('gameContent').style.display = 'none';
+            document.getElementById('gameComplete').style.display = 'none';
+            document.getElementById('startBtn').style.display = 'inline-block';
+            document.getElementById('restartBtn').style.display = 'none';
+            document.getElementById('checkBtn').style.display = 'inline-block';
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('childMessage').style.display = 'none';
+        }
+
+        function updateProgress() {
+            document.getElementById('progressText').textContent = `Word ${currentWordIndex + 1} of ${spellingList.length}`;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && isGameActive) {
+                if (document.getElementById('checkBtn').style.display !== 'none') checkSpelling();
+                else if (document.getElementById('nextBtn').style.display !== 'none') nextWord();
+            }
+        }
+
+        function showParentMessageCommon(message, type, elementId = 'parentMessageCommon') {
+            const messageDiv = document.getElementById(elementId);
+            if(messageDiv) { // Check if element exists, e.g. recordingParentMessageMalay
+                messageDiv.textContent = message;
+                messageDiv.className = `message ${type}`;
+                messageDiv.style.display = 'block';
+                setTimeout(() => { messageDiv.style.display = 'none'; }, 4000);
+            }
+        }
+        
+        function showChildMessage(message, type) {
+            const messageDiv = document.getElementById('childMessage');
+            messageDiv.textContent = message;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            if (type !== 'error') setTimeout(() => { messageDiv.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>
+
