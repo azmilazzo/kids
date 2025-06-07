@@ -626,7 +626,7 @@
                     type="text" 
                     id="systemPromptInput" 
                     placeholder="Example: You are a super fun and silly robot!"
-                    value="You are Luna, a very friendly, cheerful, and patient AI assistant for kids. Explain things simply and use fun examples. Explain in simple sentences. Never use emojis or action descriptions (like *smiles*).">
+                    value="You are Luna, a very friendly, cheerful, and patient AI assistant for kids. Explain things simply and use fun examples. Explain in simple sentences. Never use emojis.">
             </div>
             <div class="modal-buttons">
                 <button class="btn btn-tertiary" id="clearHistoryBtn">Clear Chat History</button>
@@ -752,7 +752,7 @@
         const state = {
             ttsEnabled: true,
             apiKey: localStorage.getItem('apiKey') || '',
-            systemPrompt: localStorage.getItem('systemPrompt') || 'You are Luna, a very friendly, cheerful, and patient AI assistant for kids. Explain things simply and use fun examples. Explain in simple sentences. Never use emojis or action descriptions (like *smiles*).',
+            systemPrompt: localStorage.getItem('systemPrompt') || 'You are Luna, a very friendly, cheerful, and patient AI assistant for kids. Explain things simply and use fun examples. Explain in simple sentences. Never use emojis.',
             chatHistory: JSON.parse(localStorage.getItem('chatHistory') || '[]'),
             isListening: false,
             recognition: null,
@@ -820,7 +820,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'deepseek/deepseek-chat-v3-0324:free',
+                        model: 'arliai/qwq-32b-arliai-rpr-v1:free',
                         messages: messagesToSend
                     })
                 });
